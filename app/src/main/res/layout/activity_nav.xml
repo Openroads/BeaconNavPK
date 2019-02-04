@@ -17,4 +17,31 @@
             app:layout_constraintStart_toStartOf="parent"
             android:contentDescription="TODO" app:srcCompat="@drawable/mieszkanie_plan"
             app:layout_constraintHorizontal_bias="0.0" app:layout_constraintVertical_bias="0.917"/>
+    <TextView
+            android:text="Your location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView2" app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="36dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="177dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="176dp"
+    />
+    <Button
+            android:text="Show message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/show_message_button" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="44dp"
+            app:layout_constraintEnd_toStartOf="@+id/textView2" android:layout_marginEnd="8dp"
+            android:layout_marginTop="88dp" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_bias="1.0" style="@style/Widget.AppCompat.Button.Colored"
+            android:enabled="false"/>
+    <Button
+            android:text="Open schedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/open_schedule_button" app:layout_constraintStart_toEndOf="@+id/textView2"
+            android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="81dp"
+            android:layout_marginTop="88dp" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_bias="0.0" style="@style/Widget.AppCompat.Button.Colored"
+            android:textColorLink="@color/colorAccent" android:enabled="false"/>
 </android.support.constraint.ConstraintLayout>
