@@ -12,5 +12,5 @@ fun base64Decode(s: String): String {
 }
 
 fun base64Encode(b: ByteArray): String {
-    return Base64.encodeToString(b, Base64.DEFAULT)
+    return Base64.encodeToString(b, Base64.DEFAULT).trim()
 }
