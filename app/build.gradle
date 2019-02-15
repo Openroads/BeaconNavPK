@@ -38,4 +38,8 @@ dependencies {
     implementation group: 'io.reactivex.rxjava2', name: 'rxandroid', version: '2.1.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.12.1'
 
+    implementation 'org.altbeacon:android-beacon-library:2.16.1'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+
 }
