@@ -1,12 +1,14 @@
 package pk.edu.dariusz.beaconnavpk
 
 import android.os.Bundle
+import android.os.RemoteException
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_nav.*
+import org.altbeacon.beacon.*
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiService
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
@@ -16,7 +18,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class NavigationActivity : AppCompatActivity() {
+class NavigationActivity : AppCompatActivity(), BeaconConsumer {
+
+    private val beaconManager: BeaconManager = BeaconManager.getInstanceForApplication(this)
 
     private var disposable: Disposable? = null
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
@@ -29,7 +33,10 @@ class NavigationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
-
+        beaconManager.bind(this)
+        beaconManager.beaconParsers.add(
+            BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
+        )
         show_message_button.setOnClickListener { beginSearch("EBESExQVFhcYGSAgICAgIQ==") }
     }
 
@@ -67,4 +74,57 @@ class NavigationActivity : AppCompatActivity() {
         super.onPause()
         disposable?.dispose()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        beaconManager.unbind(this)
+    }
+
+    override fun onBeaconServiceConnect() {
+
+        beaconManager.removeAllMonitorNotifiers()
+
+        beaconManager.addMonitorNotifier(object : MonitorNotifier {
+            override fun didEnterRegion(region: Region) {
+                Log.i(TAG, "I just saw an beacon for the first time!")
+            }
+
+            override fun didExitRegion(region: Region) {
+                Log.i(TAG, "I no longer see an beacon")
+            }
+
+            override fun didDetermineStateForRegion(state: Int, region: Region) {
+                Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state")
+            }
+        })
+
+        try {
+            beaconManager.startMonitoringBeaconsInRegion(Region("myMonitoringUniqueId", null, null, null))
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+
+        beaconManager.removeAllRangeNotifiers()
+        beaconManager.addRangeNotifier { beacons, region ->
+            if (beacons.isNotEmpty()) {
+                val closestBeacon: Beacon? = beacons.minBy { beacon -> beacon.distance }
+
+                Log.i(TAG, "The first beacon I see is about " + beacons.iterator().next().distance + " meters away.")
+                Log.i(
+                    TAG, "The closest beacon with id: " + closestBeacon?.id2.toString()
+                            + "I see is about " + closestBeacon?.distance + " meters away."
+                )
+
+            }
+        }
+
+        try {
+            beaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, null, null))
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+
+    }
+
+    private val TAG = "NavigationActivity_TAG"
 }
