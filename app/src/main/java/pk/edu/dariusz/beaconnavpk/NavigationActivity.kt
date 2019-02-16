@@ -19,8 +19,7 @@ import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
 import pk.edu.dariusz.beaconnavpk.model.AdvertisedId
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
-import pk.edu.dariusz.beaconnavpk.utils.base64Decode
-import pk.edu.dariusz.beaconnavpk.utils.base64Encode
+import pk.edu.dariusz.beaconnavpk.utils.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,6 +37,10 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private var trackedBeacon: Beacon? = null
 
+    private var message: String? = null
+
+    private var locationName: String? = null
+
     private var trackedProximityBeacon: BeaconInfo? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,11 +52,17 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
 
-        show_message_button.setOnClickListener { }
+        show_message_button.setOnClickListener {
+            message?.let {
+                createMessageDialog(it, locationName).show()
+            } ?: run {
+                Toast.makeText(this, "No message available", Toast.LENGTH_LONG).show()
+            }
+        }
+
         open_schedule_button.setOnClickListener {
 
             val items = getTimetabledAttachments(trackedProximityBeacon)
-
             when {
                 items.isNullOrEmpty() -> Toast.makeText(this, "No timetable available", Toast.LENGTH_LONG).show()
 
@@ -83,6 +92,15 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             .create()
     }
 
+    private fun createMessageDialog(message: String, location: String?): AlertDialog {
+        var title = "Message about "
+        title += location ?: "location"
+        return AlertDialog.Builder(this).setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok) { _, _ -> }
+            .create()
+    }
+
     private fun getTimetabledAttachments(beacon: BeaconInfo?): List<AttachmentInfo>? {
 
         return beacon?.attachments?.filter {
@@ -106,10 +124,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         }
 
         return items.toTypedArray()
-    }
-
-    private fun getType(namespacedType: String): String {
-        return namespacedType.removePrefix("$PROXIMITY_NAMESPACE/")
     }
 
     private fun beginSearch(searchString: String) {
@@ -139,13 +153,20 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                         open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
 
+                        message = null; locationName = null
                         for (attachment: AttachmentInfo in attachments) {
                             if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
                                 open_schedule_button.isEnabled = true
                             }
 
-                            if (attachment.namespacedType.contains("MESSAGE")) {
+                            val type = getType(attachment.namespacedType)
+                            if (type == MESSAGE_TYPE) {
                                 show_message_button.isEnabled = true
+                                message = base64Decode(attachment.data)
+                            }
+
+                            if (type == LOCATION_NAME) {
+                                locationName = base64Decode(attachment.data)
                             }
                         }
                         Log.i("attachment info : ", base64Decode(attachments[0].data))
@@ -202,25 +223,22 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                 val closestBeacon: Beacon? =
                     beacons.filter { beacon -> beacon.distance < 2 }.minBy { beacon -> beacon.distance }
-                closestBeacon?.let {
-                    //it we are sure that it is not null (useful for class fields)
-                    val id1Bytes = it.id1.toByteArray()
-                    val id2Bytes = it.id2.toByteArray()
+                if (closestBeacon != null) {
+                    val id1Bytes = closestBeacon.id1.toByteArray()
+                    val id2Bytes = closestBeacon.id2.toByteArray()
                     val encodedId = base64Encode(id1Bytes.plus(id2Bytes))
 
-                    if (trackedBeacon != it) {
-                        Log.i(TAG, "New tracked beacon: " + it.id2.toString())
+                    if (trackedBeacon != closestBeacon) {
+                        Log.i(TAG, "New tracked beacon: " + closestBeacon.id2.toString())
                         Log.i(TAG, "Beacons size : " + beacons.size)
                         beginSearch(encodedId)
-                        trackedBeacon = it
+                        trackedBeacon = closestBeacon
                     } else {
                         Log.i(
-                            TAG, "The closest beacon with id: " + it.id2.toString()
-                                    + "I see is about " + it.distance + " meters away."
+                            TAG, "The closest beacon with id: " + closestBeacon.id2.toString()
+                                    + "I see is about " + closestBeacon.distance + " meters away."
                         )
                     }
-                } ?: kotlin.run {
-                    // run if closestBeacon is null
                 }
             }
         }
@@ -235,14 +253,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private val TAG = "NavigationActivity_TAG"
 
-    enum class TimetableWeek {
-        TIMETABLE_EVEN, TIMETABLE_ODD, TIMETABLE
-    }
-
     companion object {
-        const val PROXIMITY_NAMESPACE = "beacon-pk"
         const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
-
     }
 
 
