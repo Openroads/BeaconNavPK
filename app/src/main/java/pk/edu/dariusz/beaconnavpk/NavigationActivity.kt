@@ -1,7 +1,10 @@
 package pk.edu.dariusz.beaconnavpk
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.RemoteException
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
@@ -15,6 +18,7 @@ import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
 import pk.edu.dariusz.beaconnavpk.model.AdvertisedId
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
+import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 import pk.edu.dariusz.beaconnavpk.utils.base64Decode
 import pk.edu.dariusz.beaconnavpk.utils.base64Encode
 import java.text.SimpleDateFormat
@@ -34,20 +38,82 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private var trackedBeacon: Beacon? = null
 
+    private var trackedProximityBeacon: BeaconInfo? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
+
         beaconManager.bind(this)
         beaconManager.beaconParsers.add(
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
-        show_message_button.setOnClickListener { /*beginSearch("EBESExQVFhcYGSAgICAgIQ==") */ }
+
+        show_message_button.setOnClickListener { }
+        open_schedule_button.setOnClickListener {
+
+            val items = getTimetabledAttachments(trackedProximityBeacon)
+
+            when {
+                items.isNullOrEmpty() -> Toast.makeText(this, "No timetable available", Toast.LENGTH_LONG).show()
+
+                items.size == 1 -> openTimetable(items[0])
+
+                items.size > 1 -> {
+                    val createChooseWeekDialog = createChooseWeekDialog(items)
+                    createChooseWeekDialog.show()
+                }
+            }
+        }
     }
 
+    private fun openTimetable(attachmentInfo: AttachmentInfo) {
+        val scheduleEndpoint = base64Decode(attachmentInfo.data)
+        Log.i(TAG, "Opening timetable in browser..: $scheduleEndpoint")
+        val browser = Intent(Intent.ACTION_VIEW, Uri.parse(SCHEDULE_URL + scheduleEndpoint))
+        startActivity(browser)
+    }
+
+    private fun createChooseWeekDialog(items: List<AttachmentInfo>): AlertDialog {
+        return AlertDialog.Builder(this).setTitle(R.string.choose_week_dialog_title)
+            .setItems(getChooseWeekDialogItems(items)) { _, which ->
+                openTimetable(items[which])
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ -> }
+            .create()
+    }
+
+    private fun getTimetabledAttachments(beacon: BeaconInfo?): List<AttachmentInfo>? {
+
+        return beacon?.attachments?.filter {
+            val type = getType(it.namespacedType)
+            type == TimetableWeek.TIMETABLE_ODD.name
+                    || type == TimetableWeek.TIMETABLE_EVEN.name
+                    || type == TimetableWeek.TIMETABLE.name
+        }?.sortedBy { attachment -> attachment.namespacedType }
+    }
+
+    private fun getChooseWeekDialogItems(attachments: List<AttachmentInfo>): Array<String> {
+        val items = mutableListOf<String>()
+
+        attachments.forEach { attachment ->
+            val type = getType(attachment.namespacedType)
+            when (type) {
+                TimetableWeek.TIMETABLE_EVEN.name -> items.add(resources.getString(R.string.week_even))
+                TimetableWeek.TIMETABLE_ODD.name -> items.add(resources.getString(R.string.week_odd))
+                TimetableWeek.TIMETABLE.name -> items.add(resources.getString(R.string.other))
+            }
+        }
+
+        return items.toTypedArray()
+    }
+
+    private fun getType(namespacedType: String): String {
+        return namespacedType.removePrefix("$PROXIMITY_NAMESPACE/")
+    }
 
     private fun beginSearch(searchString: String) {
         val currentTime = Calendar.getInstance().time
-
 
         val timestampMs = dateFormat.format(currentTime)
 
@@ -65,21 +131,25 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { response ->
-                    Log.i("size: ", response.beacons.size.toString())
-                    val attachments = response.beacons[0].attachments
+                    val proximityBeacons = response.beacons
+                    Log.i("size: ", proximityBeacons.size.toString())
+                    if (proximityBeacons.isNotEmpty()) {
+                        trackedProximityBeacon = proximityBeacons[0]
+                        val attachments = trackedProximityBeacon!!.attachments
 
-                    open_schedule_button.isEnabled = false
-                    show_message_button.isEnabled = false
-                    for (attachment: AttachmentInfo in attachments) {
-                        if (attachment.namespacedType.contains("TIMETABLE")) {
-                            open_schedule_button.isEnabled = true
-                        }
+                        open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
 
-                        if (attachment.namespacedType.contains("MESSAGE")) {
-                            show_message_button.isEnabled = true
+                        for (attachment: AttachmentInfo in attachments) {
+                            if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
+                                open_schedule_button.isEnabled = true
+                            }
+
+                            if (attachment.namespacedType.contains("MESSAGE")) {
+                                show_message_button.isEnabled = true
+                            }
                         }
+                        Log.i("attachment info : ", base64Decode(attachments[0].data))
                     }
-                    Log.i("attachment info : ", base64Decode(attachments[0].data))
                 },
                 { error ->
                     Log.e("error", error.message)
@@ -123,7 +193,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         }
 
         beaconManager.removeAllRangeNotifiers()
-        beaconManager.addRangeNotifier { beacons, region ->
+        beaconManager.addRangeNotifier { beacons, _ ->
             if (beacons.isNotEmpty()) {
                 Log.i(
                     TAG,
@@ -164,4 +234,30 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     }
 
     private val TAG = "NavigationActivity_TAG"
+
+    enum class TimetableWeek {
+        TIMETABLE_EVEN, TIMETABLE_ODD, TIMETABLE
+    }
+
+    companion object {
+        const val PROXIMITY_NAMESPACE = "beacon-pk"
+        const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
+
+    }
+
+
+    /*private fun mapBeaconAttachmentsWithWeekTypes(beacon: BeaconInfo?): Map<TimetableWeek, AttachmentInfo> {
+         val items = mapOf<TimetableWeek, AttachmentInfo>()
+
+         beacon?.attachments?.forEach { attachment ->
+             when (attachment.namespacedType) {
+                 TimetableWeek.TIMETABLE_EVEN.name -> items.plus(Pair(TimetableWeek.TIMETABLE_EVEN, attachment))
+                 TimetableWeek.TIMETABLE_ODD.name -> items.plus(Pair(TimetableWeek.TIMETABLE_ODD, attachment))
+                 TimetableWeek.TIMETABLE.name -> items.plus(Pair(TimetableWeek.TIMETABLE, attachment))
+             }
+         }
+
+         return items
+     }*/
+
 }

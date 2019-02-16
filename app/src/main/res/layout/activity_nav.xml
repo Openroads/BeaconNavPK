@@ -15,7 +15,7 @@
             app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="26dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:contentDescription="TODO" app:srcCompat="@drawable/mieszkanie_plan"
+            android:contentDescription="Here should appear image with map." app:srcCompat="@drawable/mieszkanie_plan"
             app:layout_constraintHorizontal_bias="0.0" app:layout_constraintVertical_bias="0.917"/>
     <TextView
             android:text="Your location"
@@ -34,7 +34,7 @@
             app:layout_constraintEnd_toStartOf="@+id/textView2" android:layout_marginEnd="8dp"
             android:layout_marginTop="88dp" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintHorizontal_bias="1.0" style="@style/Widget.AppCompat.Button.Colored"
-    />
+            android:enabled="false"/>
     <Button
             android:text="Open schedule"
             android:layout_width="wrap_content"
@@ -43,5 +43,6 @@
             android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="81dp"
             android:layout_marginTop="88dp" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintHorizontal_bias="0.0" style="@style/Widget.AppCompat.Button.Colored"
-            android:textColorLink="@color/colorAccent"/>
+            android:textColorLink="@color/colorAccent"
+            android:enabled="false"/>
 </android.support.constraint.ConstraintLayout>
