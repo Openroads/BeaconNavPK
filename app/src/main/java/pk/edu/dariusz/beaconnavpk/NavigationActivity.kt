@@ -11,12 +11,15 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
+import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_nav.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.Region
+import org.threeten.bp.Duration
+import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiService
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
@@ -52,6 +55,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private val localizationMarker = Paint(ANTI_ALIAS_FLAG)
 
+    private val beaconProximityAPICache = mutableMapOf<String, BeaconInfo>()
+
     init {
         localizationMarker.color = Color.RED
     }
@@ -59,6 +64,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
+        AndroidThreeTen.init(this)
 
         map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
 
@@ -68,7 +74,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         )
 
         show_message_button.setOnClickListener {
+            Log.i(TAG, "Show message button onClick")
             message?.let {
+
                 createMessageDialog(it, locationName).show()
             } ?: run {
                 Toast.makeText(this, "No message available", Toast.LENGTH_LONG).show()
@@ -76,7 +84,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         }
 
         open_schedule_button.setOnClickListener {
-
+            Log.i(TAG, "Open schedule button onClick")
             val items = getTimetabledAttachments(trackedProximityBeacon)
             when {
                 items.isNullOrEmpty() -> Toast.makeText(this, "No timetable available", Toast.LENGTH_LONG).show()
@@ -103,7 +111,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         tempCanvas.drawCircle(x, y, 10f, localizationMarker)
 
-        //temp fot tests
+        //temp dots fot tests
         tempCanvas.drawCircle(0f, 0F, 10f, localizationMarker)
         tempCanvas.drawCircle(505F, 373F, 10f, localizationMarker)
 
@@ -160,56 +168,90 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         return items.toTypedArray()
     }
 
-    private fun beginSearch(searchString: String) {
+    private fun showProximityDataForBeacon(advertisedBeaconId: String) {
+        Log.i(TAG, "Getting proximity data for advertised id: $advertisedBeaconId")
+
+        val beaconFromCache = beaconProximityAPICache[advertisedBeaconId]
+        if (beaconFromCache != null && isValidCache(beaconFromCache)) {
+            Log.i(TAG, "Taking beacon info from cache...")
+            updateViewForBeacon(beaconFromCache)
+        } else {
+            getProximityInfoFromRESTAPI(advertisedBeaconId)
+        }
+    }
+
+    private fun isValidCache(beaconFromCache: BeaconInfo): Boolean {
+        val beaconInCacheInMinutes = Duration.between(beaconFromCache.fetchDate, LocalDateTime.now()).toMinutes()
+
+        return beaconInCacheInMinutes < 1
+    }
+
+    private fun updateViewForBeacon(beaconInfo: BeaconInfo) {
+        Log.i(TAG, "Updating views for beacon: $beaconInfo")
+
+        trackedProximityBeacon = beaconInfo
+
+        val attachments = beaconInfo.attachments
+
+        open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
+
+        locationNameTextView.text = resources.getString(R.string.location_name_text)
+
+        message = null; locationName = null
+
+        for (attachment: AttachmentInfo in attachments) {
+            if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
+                open_schedule_button.isEnabled = true
+            }
+
+            val type = getType(attachment.namespacedType)
+            if (type == MESSAGE_TYPE) {
+                show_message_button.isEnabled = true
+                message = base64Decode(attachment.data)
+            }
+
+            if (type == LOCATION_NAME) {
+                locationName = base64Decode(attachment.data)
+                locationNameTextView.text = resources.getString(R.string.location_name_text) + " : $locationName"
+            }
+        }
+    }
+
+    private fun getProximityInfoFromRESTAPI(advertisedBeaconId: String) {
+        Log.i(TAG, "Fetching beacon info from Proximity API...")
+
         val currentTime = Calendar.getInstance().time
 
-        val timestampMs = dateFormat.format(currentTime)
-
         val getObservedRequest = GetObservedRequest(
-            listOf(
-                Observation(
-                    AdvertisedId(id = searchString),
-                    "",
-                    timestampMs
-                )
-            ), "*/*"
+            listOf(Observation(AdvertisedId(id = advertisedBeaconId), "", dateFormat.format(currentTime))),
+            "*/*"
         )
+
         disposable = proximityApiService.getBeaconInfo(getObservedRequest)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { response ->
                     val proximityBeacons = response.beacons
-                    Log.i("size: ", proximityBeacons.size.toString())
+
                     if (proximityBeacons.isNotEmpty()) {
-                        trackedProximityBeacon = proximityBeacons[0]
-                        val attachments = trackedProximityBeacon!!.attachments
 
-                        open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
+                        val beaconInfo = proximityBeacons[0]
 
-                        message = null; locationName = null
-                        for (attachment: AttachmentInfo in attachments) {
-                            if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
-                                open_schedule_button.isEnabled = true
-                            }
+                        Log.i(TAG, "Received beacon from proximity: $beaconInfo")
 
-                            val type = getType(attachment.namespacedType)
-                            if (type == MESSAGE_TYPE) {
-                                show_message_button.isEnabled = true
-                                message = base64Decode(attachment.data)
-                            }
+                        beaconInfo.fetchDate = LocalDateTime.now()
 
-                            if (type == LOCATION_NAME) {
-                                locationName = base64Decode(attachment.data)
-                            }
-                        }
-                        Log.i("attachment info : ", base64Decode(attachments[0].data))
+                        beaconProximityAPICache[advertisedBeaconId] = beaconInfo
+
+                        updateViewForBeacon(beaconInfo)
                     }
                 },
                 { error ->
                     Log.e("error", error.message)
                     error.printStackTrace()
                     Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
+                    throw error
                 })
     }
 
@@ -229,15 +271,15 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         beaconManager.addMonitorNotifier(object : MonitorNotifier {
             override fun didEnterRegion(region: Region) {
-                Log.i(TAG, "I just saw an beacon for the first time!")
+                Log.i(TAG, "I just saw an beacon for the first time! - didEnterRegion")
             }
 
             override fun didExitRegion(region: Region) {
-                Log.i(TAG, "I no longer see an beacon")
+                Log.i(TAG, "I no longer see an beacon - didExitRegion")
             }
 
             override fun didDetermineStateForRegion(state: Int, region: Region) {
-                Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state")
+                Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state - didDetermineStateForRegion")
             }
         })
 
@@ -250,27 +292,34 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         beaconManager.removeAllRangeNotifiers()
         beaconManager.addRangeNotifier { beacons, _ ->
             if (beacons.isNotEmpty()) {
-                Log.i(
-                    TAG,
-                    "First beacon I see is about " + beacons.iterator().next().distance + " meters away."
-                )
+
+                beacons.forEach { b -> Log.i(TAG, "Scanned beacon: $b  with distance: " + b.distance) }
 
                 val closestBeacon: Beacon? =
-                    beacons.filter { beacon -> beacon.distance < 2 }.minBy { beacon -> beacon.distance }
+                    beacons.filter { beacon -> beacon.distance < MIN_DISTANCE }.minBy { beacon -> beacon.distance }
                 if (closestBeacon != null) {
+                    Log.i(TAG, "The closest beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
                     val id1Bytes = closestBeacon.id1.toByteArray()
                     val id2Bytes = closestBeacon.id2.toByteArray()
                     val encodedId = base64Encode(id1Bytes.plus(id2Bytes))
 
                     if (trackedBeacon != closestBeacon) {
-                        Log.i(TAG, "New tracked beacon: " + closestBeacon.id2.toString())
-                        Log.i(TAG, "Beacons size : " + beacons.size)
-                        beginSearch(encodedId)
-                        trackedBeacon = closestBeacon
+                        Log.i(TAG, "That beacon is new tracked beacon..")
+
+                        try {
+                            showProximityDataForBeacon(encodedId)
+                            trackedBeacon = closestBeacon
+
+                        } catch (e: Exception) {
+                            Log.e(
+                                TAG,
+                                "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
+                            )
+                        }
+
                     } else {
                         Log.i(
-                            TAG, "The closest beacon with id: " + closestBeacon.id2.toString()
-                                    + "I see is about " + closestBeacon.distance + " meters away."
+                            TAG, "Tracked beacon: $trackedBeacon is the same as the closest beacon"
                         )
                     }
                 }
@@ -289,20 +338,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     companion object {
         const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
+        const val MIN_DISTANCE = 2
     }
-
-    /*private fun mapBeaconAttachmentsWithWeekTypes(beacon: BeaconInfo?): Map<TimetableWeek, AttachmentInfo> {
-         val items = mapOf<TimetableWeek, AttachmentInfo>()
-
-         beacon?.attachments?.forEach { attachment ->
-             when (attachment.namespacedType) {
-                 TimetableWeek.TIMETABLE_EVEN.name -> items.plus(Pair(TimetableWeek.TIMETABLE_EVEN, attachment))
-                 TimetableWeek.TIMETABLE_ODD.name -> items.plus(Pair(TimetableWeek.TIMETABLE_ODD, attachment))
-                 TimetableWeek.TIMETABLE.name -> items.plus(Pair(TimetableWeek.TIMETABLE, attachment))
-             }
-         }
-
-         return items
-     }*/
-
 }

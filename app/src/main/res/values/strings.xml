@@ -4,4 +4,5 @@
     <string name="week_odd">Nieparzyste</string>
     <string name="week_even">Parzyste</string>
     <string name="other">Wszystkie</string>
+    <string name="location_name_text">Your location</string>
 </resources>
