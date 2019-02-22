@@ -1,6 +1,9 @@
 package pk.edu.dariusz.beaconnavpk
 
 import android.content.Intent
+import android.graphics.*
+import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.RemoteException
@@ -13,6 +16,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_nav.*
 import org.altbeacon.beacon.*
+import org.altbeacon.beacon.Region
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiService
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
@@ -29,6 +33,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     private val beaconManager: BeaconManager = BeaconManager.getInstanceForApplication(this)
 
     private var disposable: Disposable? = null
+
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
     private val proximityApiService by lazy {
@@ -43,9 +48,19 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private var trackedProximityBeacon: BeaconInfo? = null
 
+    private lateinit var map: Bitmap
+
+    private val localizationMarker = Paint(ANTI_ALIAS_FLAG)
+
+    init {
+        localizationMarker.color = Color.RED
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
+
+        map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
 
         beaconManager.bind(this)
         beaconManager.beaconParsers.add(
@@ -68,12 +83,31 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                 items.size == 1 -> openTimetable(items[0])
 
-                items.size > 1 -> {
-                    val createChooseWeekDialog = createChooseWeekDialog(items)
-                    createChooseWeekDialog.show()
-                }
+                items.size > 1 -> createChooseWeekDialog(items).show()
             }
         }
+
+        drawLocalizationPoint(252.5F, 186.5F)
+    }
+
+    private fun drawLocalizationPoint(x: Float, y: Float) {
+        /* val drawableBitMap  = imageView.drawable as BitmapDrawable
+        val iw = value.intrinsicWidth
+        val width = value.bitmap.width*/
+
+        val tempMutableBitmap = Bitmap.createBitmap(map.width, map.height, Bitmap.Config.ARGB_8888)
+        val tempCanvas = Canvas(tempMutableBitmap)
+
+        tempCanvas.drawBitmap(map, 0F, 0F, null)
+
+
+        tempCanvas.drawCircle(x, y, 10f, localizationMarker)
+
+        //temp fot tests
+        tempCanvas.drawCircle(0f, 0F, 10f, localizationMarker)
+        tempCanvas.drawCircle(505F, 373F, 10f, localizationMarker)
+
+        imageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
     }
 
     private fun openTimetable(attachmentInfo: AttachmentInfo) {
@@ -256,7 +290,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     companion object {
         const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
     }
-
 
     /*private fun mapBeaconAttachmentsWithWeekTypes(beacon: BeaconInfo?): Map<TimetableWeek, AttachmentInfo> {
          val items = mapOf<TimetableWeek, AttachmentInfo>()
