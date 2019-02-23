@@ -10,6 +10,7 @@ import android.os.RemoteException
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -49,6 +50,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private var locationName: String? = null
 
+    private lateinit var spinnerNearbyBeaconsAdapter: ArrayAdapter<String>
+
     private var trackedProximityBeacon: BeaconInfo? = null
 
     private lateinit var map: Bitmap
@@ -73,11 +76,20 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
 
+        spinnerNearbyBeaconsAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            mutableListOf<String>()
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            nearby_beacons_spinner.adapter = adapter
+        }
+
         show_message_button.setOnClickListener {
             Log.i(TAG, "Show message button onClick")
             message?.let {
 
-                createMessageDialog(it, locationName).show()
+                createMessageDialog(it, nearby_beacons_spinner.selectedItem as String?).show()
             } ?: run {
                 Toast.makeText(this, "No message available", Toast.LENGTH_LONG).show()
             }
@@ -195,7 +207,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
 
-        locationNameTextView.text = resources.getString(R.string.location_name_text)
+        spinnerNearbyBeaconsAdapter.clear()
 
         message = null; locationName = null
 
@@ -212,9 +224,11 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
             if (type == LOCATION_NAME) {
                 locationName = base64Decode(attachment.data)
-                locationNameTextView.text = resources.getString(R.string.location_name_text) + " : $locationName"
+                spinnerNearbyBeaconsAdapter.add(locationName)
             }
         }
+
+        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
     }
 
     private fun getProximityInfoFromRESTAPI(advertisedBeaconId: String) {
