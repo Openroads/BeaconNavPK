@@ -10,7 +10,9 @@ import android.os.RemoteException
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.widget.ArrayAdapter
+import android.view.View
+import android.widget.AdapterView
+import android.widget.TextView
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -44,15 +46,15 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         ProximityApiService.create()
     }
 
-    private var trackedBeacon: Beacon? = null
+    private var trackedBeacons: MutableList<Beacon> = mutableListOf()
 
     private var message: String? = null
 
     private var locationName: String? = null
 
-    private lateinit var spinnerNearbyBeaconsAdapter: ArrayAdapter<String>
+    private lateinit var spinnerNearbyBeaconsAdapter: BeaconSpinnerAdapter
 
-    private var trackedProximityBeacon: BeaconInfo? = null
+    private var trackedProximityBeacons: MutableList<BeaconInfo> = mutableListOf()
 
     private lateinit var map: Bitmap
 
@@ -76,20 +78,33 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
 
-        spinnerNearbyBeaconsAdapter = ArrayAdapter(
+//        BeaconManager.setDebug(true)
+        spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
-            android.R.layout.simple_spinner_item,
-            mutableListOf<String>()
+            android.R.layout.simple_spinner_dropdown_item,//android.R.layout.simple_spinner_item TODO check on different phone
+            trackedProximityBeacons
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            //            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) TODO check on different phone
             nearby_beacons_spinner.adapter = adapter
+        }
+
+        nearby_beacons_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                val itemAtPosition = parent.getItemAtPosition(position) as BeaconInfo
+                updateViewForBeacon(itemAtPosition)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+
+            }
         }
 
         show_message_button.setOnClickListener {
             Log.i(TAG, "Show message button onClick")
             message?.let {
 
-                createMessageDialog(it, nearby_beacons_spinner.selectedItem as String?).show()
+                val location = nearby_beacons_spinner.selectedView as TextView
+                createMessageDialog(it, location.text.toString()).show()
             } ?: run {
                 Toast.makeText(this, "No message available", Toast.LENGTH_LONG).show()
             }
@@ -97,7 +112,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         open_schedule_button.setOnClickListener {
             Log.i(TAG, "Open schedule button onClick")
-            val items = getTimetabledAttachments(trackedProximityBeacon)
+            val beaconInfo = nearby_beacons_spinner.selectedItem as BeaconInfo
+            val items = getTimetabledAttachments(beaconInfo)
             when {
                 items.isNullOrEmpty() -> Toast.makeText(this, "No timetable available", Toast.LENGTH_LONG).show()
 
@@ -180,16 +196,25 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         return items.toTypedArray()
     }
 
-    private fun showProximityDataForBeacon(advertisedBeaconId: String) {
+    private fun addToTrackedProximityBeacons(advertisedBeaconId: String) {
         Log.i(TAG, "Getting proximity data for advertised id: $advertisedBeaconId")
 
         val beaconFromCache = beaconProximityAPICache[advertisedBeaconId]
         if (beaconFromCache != null && isValidCache(beaconFromCache)) {
             Log.i(TAG, "Taking beacon info from cache...")
-            updateViewForBeacon(beaconFromCache)
+            trackedProximityBeacons.add(beaconFromCache)
+            runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
+
+            //updateViewForBeacon(beaconFromCache)
         } else {
             getProximityInfoFromRESTAPI(advertisedBeaconId)
         }
+    }
+
+    private fun removeFromTrackedProximityBeacons(advertisedBeaconId: String) {
+        trackedProximityBeacons.remove(trackedProximityBeacons.find { beacon -> beacon.advertisedId.id == advertisedBeaconId })
+        runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
+
     }
 
     private fun isValidCache(beaconFromCache: BeaconInfo): Boolean {
@@ -201,13 +226,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     private fun updateViewForBeacon(beaconInfo: BeaconInfo) {
         Log.i(TAG, "Updating views for beacon: $beaconInfo")
 
-        trackedProximityBeacon = beaconInfo
-
         val attachments = beaconInfo.attachments
 
         open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
-
-        spinnerNearbyBeaconsAdapter.clear()
 
         message = null; locationName = null
 
@@ -224,11 +245,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
             if (type == LOCATION_NAME) {
                 locationName = base64Decode(attachment.data)
-                spinnerNearbyBeaconsAdapter.add(locationName)
             }
         }
-
-        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
     }
 
     private fun getProximityInfoFromRESTAPI(advertisedBeaconId: String) {
@@ -258,7 +276,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                         beaconProximityAPICache[advertisedBeaconId] = beaconInfo
 
-                        updateViewForBeacon(beaconInfo)
+                        trackedProximityBeacons.add(beaconInfo)
+                        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
+//                        updateViewForBeacon(beaconInfo)
                     }
                 },
                 { error ->
@@ -293,7 +313,10 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             }
 
             override fun didDetermineStateForRegion(state: Int, region: Region) {
-                Log.i(TAG, "I have just switched from seeing/not seeing beacons: $state - didDetermineStateForRegion")
+                Log.i(
+                    TAG,
+                    "I have just switched from seeing/not seeing beacons: $state - didDetermineStateForRegion"
+                )
             }
         })
 
@@ -309,34 +332,39 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                 beacons.forEach { b -> Log.i(TAG, "Scanned beacon: $b  with distance: " + b.distance) }
 
-                val closestBeacon: Beacon? =
-                    beacons.filter { beacon -> beacon.distance < MIN_DISTANCE }.minBy { beacon -> beacon.distance }
-                if (closestBeacon != null) {
-                    Log.i(TAG, "The closest beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
-                    val id1Bytes = closestBeacon.id1.toByteArray()
-                    val id2Bytes = closestBeacon.id2.toByteArray()
-                    val encodedId = base64Encode(id1Bytes.plus(id2Bytes))
+                val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
 
-                    if (trackedBeacon != closestBeacon) {
-                        Log.i(TAG, "That beacon is new tracked beacon..")
+                partition.second.forEach { farBeacon -> removeFromTrackedProximityBeacons(encodeBeaconId(farBeacon)) }
+                trackedBeacons.removeAll(partition.second)
 
-                        try {
-                            showProximityDataForBeacon(encodedId)
-                            trackedBeacon = closestBeacon
+                val closestBeacons = partition.first
+                /*.minBy { beacon -> beacon.distance }*/
+                if (!closestBeacons.isNullOrEmpty()) {
+                    for (closestBeacon in closestBeacons) {
+                        Log.i(TAG, "Close beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
 
-                        } catch (e: Exception) {
-                            Log.e(
-                                TAG,
-                                "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
-                            )
+                        val encodedId = encodeBeaconId(closestBeacon)
+                        if (!trackedBeacons.contains(closestBeacon)) {
+                            Log.i(TAG, "That beacon is new tracked beacon..")
+
+                            try {
+                                addToTrackedProximityBeacons(encodedId)
+                                trackedBeacons.add(closestBeacon)
+
+                            } catch (e: Exception) {
+                                Log.e(
+                                    TAG,
+                                    "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
+                                )
+                            }
+
+                        } else {
+                            Log.i(TAG, "Close beacon is already tracked..")
                         }
-
-                    } else {
-                        Log.i(
-                            TAG, "Tracked beacon: $trackedBeacon is the same as the closest beacon"
-                        )
                     }
                 }
+
+
             }
         }
 
