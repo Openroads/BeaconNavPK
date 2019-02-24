@@ -73,29 +73,29 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
 
-        beaconManager.bind(this)
         beaconManager.beaconParsers.add(
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
 
-//        BeaconManager.setDebug(true)
+        beaconManager.bind(this)
+
+        // BeaconManager.setDebug(true)
         spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
-            android.R.layout.simple_spinner_dropdown_item,//android.R.layout.simple_spinner_item TODO check on different phone
+            android.R.layout.simple_spinner_item,
             trackedProximityBeacons
         ).also { adapter ->
-            //            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) TODO check on different phone
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             nearby_beacons_spinner.adapter = adapter
-        }
+            nearby_beacons_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                    val itemAtPosition = parent.getItemAtPosition(position) as BeaconInfo
+                    updateViewForBeacon(itemAtPosition)
+                }
 
-        nearby_beacons_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                val itemAtPosition = parent.getItemAtPosition(position) as BeaconInfo
-                updateViewForBeacon(itemAtPosition)
-            }
+                override fun onNothingSelected(parent: AdapterView<*>) {
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-
+                }
             }
         }
 
