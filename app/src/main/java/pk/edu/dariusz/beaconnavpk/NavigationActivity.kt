@@ -322,6 +322,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     companion object {
         const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
-        const val MIN_DISTANCE = 3.5
+        const val MIN_DISTANCE = 4.5
     }
 }

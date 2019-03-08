@@ -25,7 +25,7 @@
             android:id="@+id/selectedLocationLabel"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"
             android:layout_marginTop="22dp" app:layout_constraintTop_toBottomOf="@+id/nearbyBeaconsLabel"/>
-    <Spinner
+    <pk.edu.dariusz.beaconnavpk.NearBeaconsSpinner
             android:layout_width="0dp"
             android:layout_height="wrap_content" android:id="@+id/nearby_beacons_spinner"
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
