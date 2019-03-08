@@ -36,18 +36,23 @@ class ProximityApiManager(
         val beaconFromCache = beaconProximityAPICache[advertisedBeaconId]
         if (beaconFromCache != null && isValidCache(beaconFromCache)) {
             Log.i(TAG, "Taking beacon info from cache...")
-            proximityBeaconListToSync.add(beaconFromCache)
-            activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
-
+            if (addIfNotExist(beaconFromCache)) {
+                activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
+            }
         } else {
             getProximityInfoFromRESTAPI(advertisedBeaconId)
         }
     }
 
     fun removeFromTrackedProximityBeacons(advertisedBeaconId: String) {
-        proximityBeaconListToSync.remove(proximityBeaconListToSync.find { beacon -> beacon.advertisedId.id == advertisedBeaconId })
-        activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
-
+        if (proximityBeaconListToSync.isNotEmpty()) {
+            proximityBeaconListToSync.remove(proximityBeaconListToSync.find { beacon -> beacon.advertisedId.id == advertisedBeaconId })
+            activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
+            if (proximityBeaconListToSync.isEmpty()) {
+                Log.i(TAG, "Tracked proximity beacons collection is empty")
+                activity.clearAndDisableViews()
+            }
+        }
     }
 
     fun dispose() {
@@ -81,8 +86,9 @@ class ProximityApiManager(
 
                         beaconProximityAPICache[advertisedBeaconId] = beaconInfo
 
-                        proximityBeaconListToSync.add(beaconInfo)
-                        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
+                        if (addIfNotExist(beaconInfo)) {
+                            spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
+                        }
                     }
                 },
                 { error ->
@@ -93,11 +99,19 @@ class ProximityApiManager(
                 })
     }
 
+    private fun addIfNotExist(beaconInfo: BeaconInfo): Boolean {
+        if (!proximityBeaconListToSync.contains(beaconInfo)) {
+            return proximityBeaconListToSync.add(beaconInfo)
+        }
+        return false
+    }
+
     private fun isValidCache(beaconFromCache: BeaconInfo): Boolean {
         val beaconInCacheInMinutes = Duration.between(beaconFromCache.fetchDate, LocalDateTime.now()).toMinutes()
 
-        return beaconInCacheInMinutes < 1
+        return beaconInCacheInMinutes < CACHE_VALID_TIME_IN_MINUTES
     }
 
     private val TAG = "NavigationActivity_TAG"
+    private val CACHE_VALID_TIME_IN_MINUTES = 1
 }

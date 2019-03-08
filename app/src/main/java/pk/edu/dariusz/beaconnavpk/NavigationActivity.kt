@@ -18,6 +18,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import kotlinx.android.synthetic.main.activity_nav.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.Region
+import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 import pk.edu.dariusz.beaconnavpk.utils.*
@@ -59,6 +60,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         )
 
         beaconManager.bind(this)
+
+        BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
+        RunningAverageRssiFilter.setSampleExpirationMilliseconds(8000L)
 
         // BeaconManager.setDebug(true)
 
@@ -105,26 +109,20 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                 items.size > 1 -> createChooseWeekDialog(items).show()
             }
         }
-
-        drawLocalizationPoint(252.5F, 186.5F)
     }
 
     private fun drawLocalizationPoint(x: Float, y: Float) {
         /* val drawableBitMap  = imageView.drawable as BitmapDrawable
         val iw = value.intrinsicWidth
         val width = value.bitmap.width*/
+        imageView.setImageBitmap(map)
 
         val tempMutableBitmap = Bitmap.createBitmap(map.width, map.height, Bitmap.Config.ARGB_8888)
         val tempCanvas = Canvas(tempMutableBitmap)
 
         tempCanvas.drawBitmap(map, 0F, 0F, null)
 
-
         tempCanvas.drawCircle(x, y, 10f, localizationMarker)
-
-        //temp dots fot tests
-        tempCanvas.drawCircle(0f, 0F, 10f, localizationMarker)
-        tempCanvas.drawCircle(505F, 373F, 10f, localizationMarker)
 
         imageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
     }
@@ -184,9 +182,10 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         val attachments = beaconInfo.attachments
 
-        open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
+        clearAndDisableViews()
 
-        message = null; locationName = null
+        var x: Float? = null
+        var y: Float? = null
 
         for (attachment: AttachmentInfo in attachments) {
             if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
@@ -194,15 +193,35 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             }
 
             val type = getType(attachment.namespacedType)
-            if (type == MESSAGE_TYPE) {
-                show_message_button.isEnabled = true
-                message = base64Decode(attachment.data)
+
+            when (type) {
+                MESSAGE_TYPE -> {
+                    show_message_button.isEnabled = true
+                    message = base64Decode(attachment.data)
+                }
+                LOCATION_NAME -> locationName = base64Decode(attachment.data)
+                POSITION_X -> x = convertToLocalizationCoordinate(base64Decode(attachment.data))
+                POSITION_Y -> y = convertToLocalizationCoordinate(base64Decode(attachment.data))
             }
 
-            if (type == LOCATION_NAME) {
-                locationName = base64Decode(attachment.data)
-            }
         }
+        imageView.setImageBitmap(map)
+        if (x != null && y != null) {
+            drawLocalizationPoint(x, y)
+        }
+    }
+
+    fun clearAndDisableViews() {
+        open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
+
+        message = null; locationName = null
+
+        imageView.setImageBitmap(map)
+    }
+
+
+    private fun convertToLocalizationCoordinate(stringCoordinate: String): Float {
+        return stringCoordinate.replace(',', '.').toFloat()
     }
 
     override fun onPause() {

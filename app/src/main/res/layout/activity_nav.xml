@@ -28,7 +28,7 @@
     />
     <Spinner
             android:layout_width="0dp"
-            android:layout_height="17dp" android:id="@+id/nearby_beacons_spinner"
+            android:layout_height="wrap_content" android:id="@+id/nearby_beacons_spinner"
             app:layout_constraintStart_toEndOf="@+id/locationNameTextView"
             android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
             app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="42dp"/>

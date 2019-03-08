@@ -16,6 +16,12 @@ const val MESSAGE_TYPE = "MESSAGE"
 
 const val LOCATION_NAME = "LOCATION_NAME"
 
+const val POSITION_X = "X"
+
+const val POSITION_Y = "Y"
+
+const val FLOOR = "FLOOR"
+
 /**
  * This enum values are also used in proximity api as "Type" key in attachments
  */
