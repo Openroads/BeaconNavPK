@@ -20,14 +20,20 @@ class BeaconSpinnerAdapter(context: Context, @LayoutRes resource: Int, private v
         objects[position].attachments.find { attachment ->
             getType(attachment.namespacedType) == LOCATION_NAME
         }?.data?.also {
-            labelText.text = base64Decode(it)
+            val s = base64Decode(it) + " (${objects[position].distance.toString().substring(0, 5)}m)"
+            labelText.text = s
         }
 
-
+        labelText.setPadding(0, labelText.paddingTop, labelText.paddingRight, labelText.paddingBottom)
         return labelText
     }
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup?): View {
         return getView(position, convertView, parent)
+    }
+
+    override fun notifyDataSetChanged() {
+        objects.sortBy { beaconInfo -> beaconInfo.distance }
+        super.notifyDataSetChanged()
     }
 }

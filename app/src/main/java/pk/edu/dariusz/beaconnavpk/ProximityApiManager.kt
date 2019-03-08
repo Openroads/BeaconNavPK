@@ -5,6 +5,7 @@ import android.widget.Toast
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import org.altbeacon.beacon.Beacon
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiConnector
@@ -12,6 +13,7 @@ import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
 import pk.edu.dariusz.beaconnavpk.model.AdvertisedId
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
+import pk.edu.dariusz.beaconnavpk.utils.encodeBeaconId
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,17 +32,18 @@ class ProximityApiManager(
 
     private val beaconProximityAPICache = mutableMapOf<String, BeaconInfo>()
 
-    fun addToTrackedProximityBeacons(advertisedBeaconId: String) {
+    fun addToTrackedProximityBeacons(beacon: Beacon) {
+        val advertisedBeaconId = encodeBeaconId(beacon)
         Log.i(TAG, "Getting proximity data for advertised id: $advertisedBeaconId")
 
         val beaconFromCache = beaconProximityAPICache[advertisedBeaconId]
         if (beaconFromCache != null && isValidCache(beaconFromCache)) {
             Log.i(TAG, "Taking beacon info from cache...")
-            if (addIfNotExist(beaconFromCache)) {
-                activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
-            }
+            beaconFromCache.distance = beacon.distance
+            addIfNotExist(beaconFromCache)
+            activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
         } else {
-            getProximityInfoFromRESTAPI(advertisedBeaconId)
+            getProximityInfoFromRESTAPI(beacon)
         }
     }
 
@@ -59,8 +62,10 @@ class ProximityApiManager(
         disposable?.dispose()
     }
 
-    private fun getProximityInfoFromRESTAPI(advertisedBeaconId: String) {
+    private fun getProximityInfoFromRESTAPI(beacon: Beacon) {
         Log.i(TAG, "Fetching beacon info from Proximity API...")
+
+        val advertisedBeaconId = encodeBeaconId(beacon)
 
         val currentTime = Calendar.getInstance().time
 
@@ -83,12 +88,11 @@ class ProximityApiManager(
                         Log.i(TAG, "Received beacon from proximity: $beaconInfo")
 
                         beaconInfo.fetchDate = LocalDateTime.now()
-
+                        beaconInfo.distance = beacon.distance
                         beaconProximityAPICache[advertisedBeaconId] = beaconInfo
 
-                        if (addIfNotExist(beaconInfo)) {
-                            spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
-                        }
+                        addIfNotExist(beaconInfo)
+                        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
                     }
                 },
                 { error ->
@@ -110,6 +114,14 @@ class ProximityApiManager(
         val beaconInCacheInMinutes = Duration.between(beaconFromCache.fetchDate, LocalDateTime.now()).toMinutes()
 
         return beaconInCacheInMinutes < CACHE_VALID_TIME_IN_MINUTES
+    }
+
+    fun updateBeaconDistance(closestBeacon: Beacon) {
+        val advertisedBeaconId = encodeBeaconId(closestBeacon)
+        Log.i(TAG, "Updating beacon $advertisedBeaconId distance for:  ${closestBeacon.distance}")
+        proximityBeaconListToSync.find { beaconInfo -> beaconInfo.advertisedId.id == advertisedBeaconId }
+            ?.distance = closestBeacon.distance
+        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
     }
 
     private val TAG = "NavigationActivity_TAG"

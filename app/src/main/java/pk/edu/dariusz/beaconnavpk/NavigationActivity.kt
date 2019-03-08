@@ -10,9 +10,9 @@ import android.os.RemoteException
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
-import android.widget.TextView
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
 import kotlinx.android.synthetic.main.activity_nav.*
@@ -31,8 +31,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     private var trackedBeacons: MutableList<Beacon> = mutableListOf()
 
     private var message: String? = null
-
-    private var locationName: String? = null
 
     private lateinit var spinnerNearbyBeaconsAdapter: BeaconSpinnerAdapter
 
@@ -60,7 +58,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         )
 
         beaconManager.bind(this)
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Navigation"
         BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
         RunningAverageRssiFilter.setSampleExpirationMilliseconds(8000L)
 
@@ -89,9 +88,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         show_message_button.setOnClickListener {
             Log.i(TAG, "Show message button onClick")
             message?.let {
-
-                val location = nearby_beacons_spinner.selectedView as TextView
-                createMessageDialog(it, location.text.toString()).show()
+                createMessageDialog(it, selectedLocationText.text.toString()).show()
             } ?: run {
                 Toast.makeText(this, "No message available", Toast.LENGTH_LONG).show()
             }
@@ -109,6 +106,16 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                 items.size > 1 -> createChooseWeekDialog(items).show()
             }
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun drawLocalizationPoint(x: Float, y: Float) {
@@ -199,7 +206,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                     show_message_button.isEnabled = true
                     message = base64Decode(attachment.data)
                 }
-                LOCATION_NAME -> locationName = base64Decode(attachment.data)
+                LOCATION_NAME -> selectedLocationText.text = base64Decode(attachment.data)
                 POSITION_X -> x = convertToLocalizationCoordinate(base64Decode(attachment.data))
                 POSITION_Y -> y = convertToLocalizationCoordinate(base64Decode(attachment.data))
             }
@@ -213,8 +220,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     fun clearAndDisableViews() {
         open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
-
-        message = null; locationName = null
+        message = null
 
         imageView.setImageBitmap(map)
     }
@@ -281,13 +287,11 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                 if (!closestBeacons.isNullOrEmpty()) {
                     for (closestBeacon in closestBeacons) {
                         Log.i(TAG, "Close beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
-
-                        val encodedId = encodeBeaconId(closestBeacon)
                         if (!trackedBeacons.contains(closestBeacon)) {
                             Log.i(TAG, "That beacon is new tracked beacon..")
 
                             try {
-                                proximityApiManager.addToTrackedProximityBeacons(encodedId)
+                                proximityApiManager.addToTrackedProximityBeacons(closestBeacon)
                                 trackedBeacons.add(closestBeacon)
 
                             } catch (e: Exception) {
@@ -299,6 +303,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                         } else {
                             Log.i(TAG, "Close beacon is already tracked..")
+                            proximityApiManager.updateBeaconDistance(closestBeacon)
                         }
                     }
                 }
@@ -317,6 +322,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     companion object {
         const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
-        const val MIN_DISTANCE = 2
+        const val MIN_DISTANCE = 3.5
     }
 }

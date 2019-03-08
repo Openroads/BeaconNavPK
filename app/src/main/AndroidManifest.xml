@@ -16,7 +16,7 @@
 
         <activity android:name=".NavigationActivity">
         </activity>
-        <activity android:name=".WelcomeActivity">
+        <activity android:name=".WelcomeActivity"><!--android:theme="@style/Theme.AppCompat.NoActionBar"-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
