@@ -12,7 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 
-interface ProximityApiService {
+interface ProximityApiConnector {
 
     /*********************************************************************************************
      * ENDPOINTS
@@ -27,7 +27,7 @@ interface ProximityApiService {
     companion object {
         private const val PROXIMITY_API_ENDPOINT: String = "https://proximitybeacon.googleapis.com/v1beta1/"
 
-        fun create(): ProximityApiService {
+        fun create(): ProximityApiConnector {
 
             val interceptor = HttpLoggingInterceptor()
             interceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -44,7 +44,7 @@ interface ProximityApiService {
                 .baseUrl(PROXIMITY_API_ENDPOINT)
                 .build()
 
-            return retrofit.create(ProximityApiService::class.java)
+            return retrofit.create(ProximityApiConnector::class.java)
         }
     }
 

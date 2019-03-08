@@ -15,36 +15,17 @@ import android.widget.AdapterView
 import android.widget.TextView
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_nav.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.Region
-import org.threeten.bp.Duration
-import org.threeten.bp.LocalDateTime
-import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiService
-import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
-import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
-import pk.edu.dariusz.beaconnavpk.model.AdvertisedId
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 import pk.edu.dariusz.beaconnavpk.utils.*
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private val beaconManager: BeaconManager = BeaconManager.getInstanceForApplication(this)
-
-    private var disposable: Disposable? = null
-
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-
-    private val proximityApiService by lazy {
-        ProximityApiService.create()
-    }
 
     private var trackedBeacons: MutableList<Beacon> = mutableListOf()
 
@@ -54,17 +35,17 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private lateinit var spinnerNearbyBeaconsAdapter: BeaconSpinnerAdapter
 
-    private var trackedProximityBeacons: MutableList<BeaconInfo> = mutableListOf()
+    private val trackedProximityBeacons: MutableList<BeaconInfo> = mutableListOf()
 
     private lateinit var map: Bitmap
 
     private val localizationMarker = Paint(ANTI_ALIAS_FLAG)
 
-    private val beaconProximityAPICache = mutableMapOf<String, BeaconInfo>()
-
     init {
         localizationMarker.color = Color.RED
     }
+
+    private lateinit var proximityApiManager: ProximityApiManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +61,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         beaconManager.bind(this)
 
         // BeaconManager.setDebug(true)
+
         spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
             android.R.layout.simple_spinner_item,
@@ -93,11 +75,12 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                     updateViewForBeacon(itemAtPosition)
                 }
 
-                override fun onNothingSelected(parent: AdapterView<*>) {
-
-                }
+                override fun onNothingSelected(parent: AdapterView<*>) {}
             }
         }
+
+        proximityApiManager =
+            ProximityApiManager(this, spinnerNearbyBeaconsAdapter, trackedProximityBeacons)
 
         show_message_button.setOnClickListener {
             Log.i(TAG, "Show message button onClick")
@@ -196,33 +179,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         return items.toTypedArray()
     }
 
-    private fun addToTrackedProximityBeacons(advertisedBeaconId: String) {
-        Log.i(TAG, "Getting proximity data for advertised id: $advertisedBeaconId")
-
-        val beaconFromCache = beaconProximityAPICache[advertisedBeaconId]
-        if (beaconFromCache != null && isValidCache(beaconFromCache)) {
-            Log.i(TAG, "Taking beacon info from cache...")
-            trackedProximityBeacons.add(beaconFromCache)
-            runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
-
-            //updateViewForBeacon(beaconFromCache)
-        } else {
-            getProximityInfoFromRESTAPI(advertisedBeaconId)
-        }
-    }
-
-    private fun removeFromTrackedProximityBeacons(advertisedBeaconId: String) {
-        trackedProximityBeacons.remove(trackedProximityBeacons.find { beacon -> beacon.advertisedId.id == advertisedBeaconId })
-        runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
-
-    }
-
-    private fun isValidCache(beaconFromCache: BeaconInfo): Boolean {
-        val beaconInCacheInMinutes = Duration.between(beaconFromCache.fetchDate, LocalDateTime.now()).toMinutes()
-
-        return beaconInCacheInMinutes < 1
-    }
-
     private fun updateViewForBeacon(beaconInfo: BeaconInfo) {
         Log.i(TAG, "Updating views for beacon: $beaconInfo")
 
@@ -249,49 +205,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-    private fun getProximityInfoFromRESTAPI(advertisedBeaconId: String) {
-        Log.i(TAG, "Fetching beacon info from Proximity API...")
-
-        val currentTime = Calendar.getInstance().time
-
-        val getObservedRequest = GetObservedRequest(
-            listOf(Observation(AdvertisedId(id = advertisedBeaconId), "", dateFormat.format(currentTime))),
-            "*/*"
-        )
-
-        disposable = proximityApiService.getBeaconInfo(getObservedRequest)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { response ->
-                    val proximityBeacons = response.beacons
-
-                    if (proximityBeacons.isNotEmpty()) {
-
-                        val beaconInfo = proximityBeacons[0]
-
-                        Log.i(TAG, "Received beacon from proximity: $beaconInfo")
-
-                        beaconInfo.fetchDate = LocalDateTime.now()
-
-                        beaconProximityAPICache[advertisedBeaconId] = beaconInfo
-
-                        trackedProximityBeacons.add(beaconInfo)
-                        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
-//                        updateViewForBeacon(beaconInfo)
-                    }
-                },
-                { error ->
-                    Log.e("error", error.message)
-                    error.printStackTrace()
-                    Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
-                    throw error
-                })
-    }
-
     override fun onPause() {
         super.onPause()
-        disposable?.dispose()
+        proximityApiManager.dispose()
     }
 
     override fun onDestroy() {
@@ -334,7 +250,11 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                 val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
 
-                partition.second.forEach { farBeacon -> removeFromTrackedProximityBeacons(encodeBeaconId(farBeacon)) }
+                partition.second.forEach { farBeacon ->
+                    proximityApiManager.removeFromTrackedProximityBeacons(
+                        encodeBeaconId(farBeacon)
+                    )
+                }
                 trackedBeacons.removeAll(partition.second)
 
                 val closestBeacons = partition.first
@@ -348,7 +268,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                             Log.i(TAG, "That beacon is new tracked beacon..")
 
                             try {
-                                addToTrackedProximityBeacons(encodedId)
+                                proximityApiManager.addToTrackedProximityBeacons(encodedId)
                                 trackedBeacons.add(closestBeacon)
 
                             } catch (e: Exception) {
@@ -363,8 +283,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
                         }
                     }
                 }
-
-
             }
         }
 
