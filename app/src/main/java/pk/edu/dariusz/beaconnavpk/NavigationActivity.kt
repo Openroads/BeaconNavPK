@@ -1,7 +1,10 @@
 package pk.edu.dariusz.beaconnavpk
 
 import android.content.Intent
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -17,7 +20,6 @@ import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
 import kotlinx.android.synthetic.main.activity_nav.*
 import org.altbeacon.beacon.*
-import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
@@ -42,8 +44,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private lateinit var map: Bitmap
 
-    private val selectedLocationMarker = Paint(ANTI_ALIAS_FLAG).apply { color = Color.RED }
-    val theNearestLocationMarker = Paint(ANTI_ALIAS_FLAG).apply { color = Color.GREEN }
+    private val selectedLocationMarker = Paint(ANTI_ALIAS_FLAG)
+    val theNearestLocationMarker = Paint(ANTI_ALIAS_FLAG)
 
     val localizationPointsMap = mutableMapOf<Paint, Position>()
 
@@ -54,6 +56,8 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         setContentView(R.layout.activity_nav)
         AndroidThreeTen.init(this)
 
+        selectedLocationMarker.color = resources.getColor(android.R.color.holo_red_dark, theme)
+        theNearestLocationMarker.color = resources.getColor(android.R.color.holo_green_dark, theme)
         map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
 
         beaconManager.beaconParsers.add(
@@ -122,7 +126,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     }
 
     fun drawLocalizationPoints() {
-        imageView.setImageBitmap(map)
+        mapImageView.setImageBitmap(map)
 
         val tempMutableBitmap = Bitmap.createBitmap(map.width, map.height, Bitmap.Config.ARGB_8888)
         val tempCanvas = Canvas(tempMutableBitmap)
@@ -133,7 +137,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             tempCanvas.drawCircle(position.x, position.y, 10f, marker)
         }
 
-        imageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
+        mapImageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
     }
 
     private fun openTimetable(attachmentInfo: AttachmentInfo) {
@@ -208,7 +212,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             show_message_button.isEnabled = true
             message = msg
         }
-        imageView.setImageBitmap(map)
+        mapImageView.setImageBitmap(map)
 
         attachmentData.mapPosition?.let { position ->
             localizationPointsMap[selectedLocationMarker] = position
@@ -220,7 +224,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
         message = null
 
-        imageView.setImageBitmap(map)
+        mapImageView.setImageBitmap(map)
     }
 
     override fun onPause() {

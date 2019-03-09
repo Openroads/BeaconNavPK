@@ -39,9 +39,13 @@ class BeaconSpinnerAdapter(
             objects.sortBy { beaconInfo -> beaconInfo.distance }
             val nearestBeacon = objects[0]
             nearestBeacon.attachmentData.mapPosition?.let { position ->
-                navigationActivity.localizationPointsMap[navigationActivity.theNearestLocationMarker] = position
-                navigationActivity.drawLocalizationPoints()
+                val localizationPointsMap = navigationActivity.localizationPointsMap
+                if (localizationPointsMap[navigationActivity.theNearestLocationMarker] != position) {
+                    localizationPointsMap[navigationActivity.theNearestLocationMarker] = position
+                    navigationActivity.drawLocalizationPoints()
+                }
             }
+
         }
         super.notifyDataSetChanged()
     }
