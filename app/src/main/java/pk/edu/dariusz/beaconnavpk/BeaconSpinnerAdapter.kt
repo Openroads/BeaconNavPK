@@ -6,9 +6,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
-import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
-import pk.edu.dariusz.beaconnavpk.utils.base64Decode
-import pk.edu.dariusz.beaconnavpk.utils.getType
 
 class BeaconSpinnerAdapter(
     private val navigationActivity: NavigationActivity, @LayoutRes resource: Int,
@@ -19,12 +16,10 @@ class BeaconSpinnerAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val labelText = super.getView(position, convertView, parent) as TextView
 
-        objects[position].attachments.find { attachment ->
-            getType(attachment.namespacedType) == LOCATION_NAME
-        }?.data?.also {
-            val s = base64Decode(it) + " (${objects[position].distance.toString().substring(0, 5)}m)"
-            labelText.text = s
-        }
+        val s = objects[position].attachmentData.locationName +
+                " (${objects[position].distance.toString().substring(0, 4)}m)"
+
+        labelText.text = s
 
         labelText.setPadding(0, labelText.paddingTop, labelText.paddingRight, labelText.paddingBottom)
         return labelText
@@ -45,7 +40,6 @@ class BeaconSpinnerAdapter(
                     navigationActivity.drawLocalizationPoints()
                 }
             }
-
         }
         super.notifyDataSetChanged()
     }

@@ -51,11 +51,13 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private lateinit var proximityApiManager: ProximityApiManager
 
+    private var selectedBeacon: BeaconInfo? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
         AndroidThreeTen.init(this)
-
+        mapImageView.isZoomable = false
         selectedLocationMarker.color = resources.getColor(android.R.color.holo_red_dark, theme)
         theNearestLocationMarker.color = resources.getColor(android.R.color.holo_green_dark, theme)
         map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
@@ -81,8 +83,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
             nearby_beacons_spinner.adapter = adapter
             nearby_beacons_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    val itemAtPosition = parent.getItemAtPosition(position) as BeaconInfo
-                    updateViewForBeacon(itemAtPosition)
+                    selectedBeacon = parent.getItemAtPosition(position) as BeaconInfo
+                    selectedBeacon?.let { updateViewForBeacon(it) }
+
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -103,8 +106,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         open_schedule_button.setOnClickListener {
             Log.i(TAG, "Open schedule button onClick")
-            val beaconInfo = nearby_beacons_spinner.selectedItem as BeaconInfo
-            val items = getTimetabledAttachments(beaconInfo)
+            val items = getTimetabledAttachments(selectedBeacon)
             when {
                 items.isNullOrEmpty() -> Toast.makeText(this, "No timetable available", Toast.LENGTH_LONG).show()
 
@@ -220,10 +222,10 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         }
     }
 
-    fun clearAndDisableViews() {
+    private fun clearAndDisableViews() {
         open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
         message = null
-
+        selectedLocationText.text = ""
         mapImageView.setImageBitmap(map)
     }
 

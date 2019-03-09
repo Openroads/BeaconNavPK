@@ -52,9 +52,17 @@ class ProximityApiManager(
             activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
             if (proximityBeaconListToSync.isEmpty()) {
                 Log.i(TAG, "Tracked proximity beacons collection is empty")
-                activity.clearAndDisableViews()
+                // activity.clearAndDisableViews()
             }
         }
+    }
+
+    fun updateBeaconDistance(closestBeacon: Beacon) {
+        val advertisedBeaconId = encodeBeaconId(closestBeacon)
+        Log.i(TAG, "Updating beacon $advertisedBeaconId distance for:  ${closestBeacon.distance}")
+        proximityBeaconListToSync.find { beaconInfo -> beaconInfo.advertisedId.id == advertisedBeaconId }
+            ?.distance = closestBeacon.distance
+        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
     }
 
     fun dispose() {
@@ -145,14 +153,6 @@ class ProximityApiManager(
         return beaconInCacheInMinutes < CACHE_VALID_TIME_IN_MINUTES
     }
 
-    fun updateBeaconDistance(closestBeacon: Beacon) {
-        val advertisedBeaconId = encodeBeaconId(closestBeacon)
-        Log.i(TAG, "Updating beacon $advertisedBeaconId distance for:  ${closestBeacon.distance}")
-        proximityBeaconListToSync.find { beaconInfo -> beaconInfo.advertisedId.id == advertisedBeaconId }
-            ?.distance = closestBeacon.distance
-        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
-    }
-
-    private val TAG = "NavigationActivity_TAG"
+    private val TAG = "ProximityApiManager_TAG"
     private val CACHE_VALID_TIME_IN_MINUTES = 1
 }
