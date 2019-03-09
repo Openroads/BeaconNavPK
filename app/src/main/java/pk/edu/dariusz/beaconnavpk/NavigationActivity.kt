@@ -21,7 +21,11 @@ import org.altbeacon.beacon.Region
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
-import pk.edu.dariusz.beaconnavpk.utils.*
+import pk.edu.dariusz.beaconnavpk.model.Position
+import pk.edu.dariusz.beaconnavpk.utils.TimetableWeek
+import pk.edu.dariusz.beaconnavpk.utils.base64Decode
+import pk.edu.dariusz.beaconnavpk.utils.encodeBeaconId
+import pk.edu.dariusz.beaconnavpk.utils.getType
 
 
 class NavigationActivity : AppCompatActivity(), BeaconConsumer {
@@ -38,11 +42,10 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
     private lateinit var map: Bitmap
 
-    private val localizationMarker = Paint(ANTI_ALIAS_FLAG)
+    private val selectedLocationMarker = Paint(ANTI_ALIAS_FLAG).apply { color = Color.RED }
+    val theNearestLocationMarker = Paint(ANTI_ALIAS_FLAG).apply { color = Color.GREEN }
 
-    init {
-        localizationMarker.color = Color.RED
-    }
+    val localizationPointsMap = mutableMapOf<Paint, Position>()
 
     private lateinit var proximityApiManager: ProximityApiManager
 
@@ -118,10 +121,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun drawLocalizationPoint(x: Float, y: Float) {
-        /* val drawableBitMap  = imageView.drawable as BitmapDrawable
-        val iw = value.intrinsicWidth
-        val width = value.bitmap.width*/
+    fun drawLocalizationPoints() {
         imageView.setImageBitmap(map)
 
         val tempMutableBitmap = Bitmap.createBitmap(map.width, map.height, Bitmap.Config.ARGB_8888)
@@ -129,7 +129,9 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         tempCanvas.drawBitmap(map, 0F, 0F, null)
 
-        tempCanvas.drawCircle(x, y, 10f, localizationMarker)
+        localizationPointsMap.forEach { (marker, position) ->
+            tempCanvas.drawCircle(position.x, position.y, 10f, marker)
+        }
 
         imageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
     }
@@ -191,30 +193,26 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         clearAndDisableViews()
 
-        var x: Float? = null
-        var y: Float? = null
-
         for (attachment: AttachmentInfo in attachments) {
             if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
                 open_schedule_button.isEnabled = true
+                break
             }
+        }
 
-            val type = getType(attachment.namespacedType)
+        val attachmentData = beaconInfo.attachmentData
 
-            when (type) {
-                MESSAGE_TYPE -> {
-                    show_message_button.isEnabled = true
-                    message = base64Decode(attachment.data)
-                }
-                LOCATION_NAME -> selectedLocationText.text = base64Decode(attachment.data)
-                POSITION_X -> x = convertToLocalizationCoordinate(base64Decode(attachment.data))
-                POSITION_Y -> y = convertToLocalizationCoordinate(base64Decode(attachment.data))
-            }
+        selectedLocationText.text = attachmentData.locationName
 
+        attachmentData.message?.let { msg ->
+            show_message_button.isEnabled = true
+            message = msg
         }
         imageView.setImageBitmap(map)
-        if (x != null && y != null) {
-            drawLocalizationPoint(x, y)
+
+        attachmentData.mapPosition?.let { position ->
+            localizationPointsMap[selectedLocationMarker] = position
+            drawLocalizationPoints()
         }
     }
 
@@ -223,11 +221,6 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         message = null
 
         imageView.setImageBitmap(map)
-    }
-
-
-    private fun convertToLocalizationCoordinate(stringCoordinate: String): Float {
-        return stringCoordinate.replace(',', '.').toFloat()
     }
 
     override fun onPause() {

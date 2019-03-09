@@ -1,6 +1,5 @@
 package pk.edu.dariusz.beaconnavpk
 
-import android.content.Context
 import android.support.annotation.LayoutRes
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +10,11 @@ import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
 import pk.edu.dariusz.beaconnavpk.utils.base64Decode
 import pk.edu.dariusz.beaconnavpk.utils.getType
 
-class BeaconSpinnerAdapter(context: Context, @LayoutRes resource: Int, private val objects: MutableList<BeaconInfo>) :
-    ArrayAdapter<BeaconInfo>(context, resource, objects) {
+class BeaconSpinnerAdapter(
+    private val navigationActivity: NavigationActivity, @LayoutRes resource: Int,
+    private val objects: MutableList<BeaconInfo>
+) :
+    ArrayAdapter<BeaconInfo>(navigationActivity, resource, objects) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val labelText = super.getView(position, convertView, parent) as TextView
@@ -33,7 +35,14 @@ class BeaconSpinnerAdapter(context: Context, @LayoutRes resource: Int, private v
     }
 
     override fun notifyDataSetChanged() {
-        objects.sortBy { beaconInfo -> beaconInfo.distance }
+        if (objects.isNotEmpty()) {
+            objects.sortBy { beaconInfo -> beaconInfo.distance }
+            val nearestBeacon = objects[0]
+            nearestBeacon.attachmentData.mapPosition?.let { position ->
+                navigationActivity.localizationPointsMap[navigationActivity.theNearestLocationMarker] = position
+                navigationActivity.drawLocalizationPoints()
+            }
+        }
         super.notifyDataSetChanged()
     }
 }

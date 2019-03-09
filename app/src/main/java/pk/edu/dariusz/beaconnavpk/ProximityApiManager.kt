@@ -11,9 +11,8 @@ import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiConnector
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
-import pk.edu.dariusz.beaconnavpk.model.AdvertisedId
-import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
-import pk.edu.dariusz.beaconnavpk.utils.encodeBeaconId
+import pk.edu.dariusz.beaconnavpk.model.*
+import pk.edu.dariusz.beaconnavpk.utils.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -89,6 +88,7 @@ class ProximityApiManager(
 
                         beaconInfo.fetchDate = LocalDateTime.now()
                         beaconInfo.distance = beacon.distance
+                        beaconInfo.attachmentData = extractAttachments(beaconInfo.attachments)
                         beaconProximityAPICache[advertisedBeaconId] = beaconInfo
 
                         addIfNotExist(beaconInfo)
@@ -101,6 +101,35 @@ class ProximityApiManager(
                     Toast.makeText(activity, error.message, Toast.LENGTH_SHORT).show()
                     throw error
                 })
+    }
+
+    private fun extractAttachments(attachments: List<AttachmentInfo>): AttachmentData {
+        val attachmentData = AttachmentData()
+        var x: Float? = null
+        var y: Float? = null
+        for (attachment: AttachmentInfo in attachments) {
+
+            val type = getType(attachment.namespacedType)
+
+            when (type) {
+                MESSAGE_TYPE -> {
+                    attachmentData.message = base64Decode(attachment.data)
+                }
+                LOCATION_NAME -> attachmentData.locationName = base64Decode(attachment.data)
+                POSITION_X -> x = convertToLocalizationCoordinate(base64Decode(attachment.data))
+                POSITION_Y -> y = convertToLocalizationCoordinate(base64Decode(attachment.data))
+            }
+
+        }
+        if (x != null && y != null) {
+            attachmentData.mapPosition = Position(x, y)
+        }
+
+        return attachmentData
+    }
+
+    private fun convertToLocalizationCoordinate(stringCoordinate: String): Float {
+        return stringCoordinate.replace(',', '.').toFloat()
     }
 
     private fun addIfNotExist(beaconInfo: BeaconInfo): Boolean {
