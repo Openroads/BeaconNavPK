@@ -1,5 +1,7 @@
 package pk.edu.dariusz.beaconnavpk
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.util.Log
 import android.widget.Toast
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,6 +17,7 @@ import pk.edu.dariusz.beaconnavpk.model.*
 import pk.edu.dariusz.beaconnavpk.utils.*
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 class ProximityApiManager(
     private val activity: NavigationActivity,
@@ -42,7 +45,11 @@ class ProximityApiManager(
             addIfNotExist(beaconFromCache)
             activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
         } else {
-            getProximityInfoFromRESTAPI(beacon)
+            if (isNetworkAvailable()) {
+                getProximityInfoFromRESTAPI(beacon)
+            } else {
+                Toast.makeText(activity, "Please connect to the internet", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -153,6 +160,13 @@ class ProximityApiManager(
         return beaconInCacheInMinutes < CACHE_VALID_TIME_IN_MINUTES
     }
 
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnectedOrConnecting
+    }
+
     private val TAG = "ProximityApiManager_TAG"
     private val CACHE_VALID_TIME_IN_MINUTES = 1
+
 }
