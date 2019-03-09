@@ -11,9 +11,9 @@
         <!--<item name="windowNoTitle">true</item> uncomment to hide action bar-->
     </style>
 
-    <style name="SpinnerStyle" parent="Widget.AppCompat.ListView.DropDown">
+    <style name="SpinnerStyle" parent="Widget.AppCompat.TextView.SpinnerItem">
         <item name="android:divider">#d1d1d1</item>
-        <item name="android:dividerHeight">2dp</item>
+        <item name="android:dividerHeight">3dp</item>
     </style>
 
 </resources>

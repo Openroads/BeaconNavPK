@@ -76,7 +76,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
         spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            R.layout.spinner_row,
             trackedProximityBeacons
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
