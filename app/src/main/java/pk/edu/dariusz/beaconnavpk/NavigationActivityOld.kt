@@ -1,3 +1,4 @@
+/*
 package pk.edu.dariusz.beaconnavpk
 
 import android.content.Intent
@@ -5,26 +6,20 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.RemoteException
-import android.support.design.widget.NavigationView
-import android.support.design.widget.Snackbar
-import android.support.v4.view.GravityCompat
-import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
 import kotlinx.android.synthetic.main.activity_nav.*
-import kotlinx.android.synthetic.main.activity_navigation_drawer.*
-import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
@@ -32,9 +27,10 @@ import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 import pk.edu.dariusz.beaconnavpk.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
-class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, BeaconConsumer {
 
-    private lateinit var beaconManager: BeaconManager
+class NavigationActivityOld : AppCompatActivity(), BeaconConsumer {
+
+    private val beaconManager: BeaconManager = BeaconManager.getInstanceForApplication(this)
 
     private var trackedBeacons: MutableList<Beacon> = mutableListOf()
 
@@ -46,24 +42,20 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
     private lateinit var map: Bitmap
 
-    private val selectedLocationMarker = Paint(Paint.ANTI_ALIAS_FLAG)
-    val theNearestLocationMarker = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val selectedLocationMarker = Paint(ANTI_ALIAS_FLAG)
+    val theNearestLocationMarker = Paint(ANTI_ALIAS_FLAG)
 
     val localizationPointsMap = mutableMapOf<Paint, Position>()
 
     private lateinit var proximityApiManager: ProximityApiManager
 
     private var selectedBeacon: BeaconInfo? = null
-
-    private lateinit var connectToNetworkSnackInfo: Snackbar
-
+    private lateinit var connectToNetworkToast: Toast
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_navigation_drawer)
-        beaconManager = BeaconManager.getInstanceForApplication(this)
-
+        setContentView(R.layout.activity_nav)
         AndroidThreeTen.init(this)
-//        mapImageView.isZoomable = false
+        mapImageView.isZoomable = false
         selectedLocationMarker.color = resources.getColor(android.R.color.holo_red_dark, theme)
         theNearestLocationMarker.color = resources.getColor(android.R.color.holo_green_dark, theme)
         map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
@@ -71,12 +63,14 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         beaconManager.beaconParsers.add(
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
-        connectToNetworkSnackInfo = Snackbar.make(
-            toolbar, "Nearby localization detected." +
-                    " Please, connect to the internet to show information about them.", Snackbar.LENGTH_LONG
+        connectToNetworkToast = Toast.makeText(
+            this, "Nearby localization detected." +
+                    " Please, connect to the internet to show information about them.",
+            Toast.LENGTH_LONG
         )
         beaconManager.bind(this)
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Navigation"
         BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
         RunningAverageRssiFilter.setSampleExpirationMilliseconds(8000L)
 
@@ -123,84 +117,17 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                 items.size > 1 -> createChooseWeekDialog(items).show()
             }
         }
-
-        toolbar.title = "Navigation"
-        setSupportActionBar(toolbar)
-
-        compassButton.setOnClickListener {
-            nearby_beacons_spinner.setSelection(0, true)
-        }
-
-        val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawer_layout.addDrawerListener(toggle)
-        toggle.syncState()
-
-        nav_view.setNavigationItemSelectedListener(this)
-    }
-
-    override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.navigation_drawer, menu)
-        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
-        when (item.itemId) {
-            R.id.nav_camera -> {
-                // Handle the camera action
-            }
-            R.id.nav_gallery -> {
-
-            }
-            R.id.nav_slideshow -> {
-
-            }
-            R.id.nav_manage -> {
-
-            }
-            R.id.nav_share -> {
-
-            }
-            R.id.nav_send -> {
-
+            android.R.id.home -> {
+                finish()
+                return true
             }
         }
-
-        drawer_layout.closeDrawer(GravityCompat.START)
-        return true
+        return super.onOptionsItemSelected(item)
     }
-
-
-    /* override fun onOptionsItemSelected(item: MenuItem): Boolean {
-         when (item.itemId) {
-             android.R.id.home -> {
-                 finish()
-                 return true
-             }
-         }
-         return super.onOptionsItemSelected(item)
-     }*/
 
     fun drawLocalizationPoints() {
         mapImageView.setImageBitmap(map)
@@ -358,7 +285,9 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                     trackedBeacons.removeAll(partition.second)
 
                     val closestBeacons = partition.first
-                    /*.minBy { beacon -> beacon.distance }*/
+                    */
+/*.minBy { beacon -> beacon.distance }*//*
+
                     if (!closestBeacons.isNullOrEmpty()) {
                         for (closestBeacon in closestBeacons) {
                             Log.i(TAG, "Close beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
@@ -383,13 +312,8 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
                         }
                     }
                 } else {
-                    if (!connectToNetworkSnackInfo.view.isShown) {
-/*                      to show on top
-                        val view = connectToNetworkSnackInfo.view
-                        val params = view.layoutParams as FrameLayout.LayoutParams
-                        params.gravity = Gravity.TOP
-                        view.layoutParams = params*/
-                        connectToNetworkSnackInfo.show()
+                    if (!connectToNetworkToast.view.isShown) {
+                        connectToNetworkToast.show()
                     }
                 }
             }
@@ -410,3 +334,4 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         const val MIN_DISTANCE = 4.5
     }
 }
+*/

@@ -5,7 +5,9 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".NavigationActivityOld">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:showIn="@layout/app_bar_navigation_drawer"
+        tools:context=".NavigationActivity">
     <android.support.v7.widget.CardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,13 +24,13 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:id="@+id/mapImageView"
-            app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="4dp"
             app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="175dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:contentDescription="Here should appear image with map." app:srcCompat="@drawable/mieszkanie_plan"
-            app:layout_constraintHorizontal_bias="0.497" app:layout_constraintVertical_bias="0.774"
-            android:layout_marginEnd="4dp" android:layout_marginStart="4dp"/>
+            app:layout_constraintHorizontal_bias="0.497"
+            android:layout_marginEnd="4dp" android:layout_marginStart="4dp"
+            android:layout_marginBottom="34dp" app:layout_constraintBottom_toBottomOf="parent"/>
     <TextView
             android:text="@string/location_name_text"
             android:layout_width="wrap_content"
@@ -92,6 +94,4 @@
                 android:layout_height="17dp" app:srcCompat="@android:color/holo_red_dark"
                 android:id="@+id/imageView2"/>
     </android.support.v7.widget.CardView>
-
-
 </android.support.constraint.ConstraintLayout>
