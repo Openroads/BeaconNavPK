@@ -24,10 +24,7 @@ import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 import pk.edu.dariusz.beaconnavpk.model.Position
-import pk.edu.dariusz.beaconnavpk.utils.TimetableWeek
-import pk.edu.dariusz.beaconnavpk.utils.base64Decode
-import pk.edu.dariusz.beaconnavpk.utils.encodeBeaconId
-import pk.edu.dariusz.beaconnavpk.utils.getType
+import pk.edu.dariusz.beaconnavpk.utils.*
 
 
 class NavigationActivity : AppCompatActivity(), BeaconConsumer {
@@ -52,7 +49,7 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
     private lateinit var proximityApiManager: ProximityApiManager
 
     private var selectedBeacon: BeaconInfo? = null
-
+    private lateinit var connectToNetworkToast: Toast
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nav)
@@ -65,7 +62,11 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
         beaconManager.beaconParsers.add(
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
-
+        connectToNetworkToast = Toast.makeText(
+            this, "Nearby localization detected." +
+                    " Please, connect to the internet to show information about them.",
+            Toast.LENGTH_LONG
+        )
         beaconManager.bind(this)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Navigation"
@@ -272,38 +273,44 @@ class NavigationActivity : AppCompatActivity(), BeaconConsumer {
 
                 beacons.forEach { b -> Log.i(TAG, "Scanned beacon: $b  with distance: " + b.distance) }
 
-                val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
+                if (isNetworkAvailable(this)) {
+                    val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
 
-                partition.second.forEach { farBeacon ->
-                    proximityApiManager.removeFromTrackedProximityBeacons(
-                        encodeBeaconId(farBeacon)
-                    )
-                }
-                trackedBeacons.removeAll(partition.second)
+                    partition.second.forEach { farBeacon ->
+                        proximityApiManager.removeFromTrackedProximityBeacons(
+                            encodeBeaconId(farBeacon)
+                        )
+                    }
+                    trackedBeacons.removeAll(partition.second)
 
-                val closestBeacons = partition.first
-                /*.minBy { beacon -> beacon.distance }*/
-                if (!closestBeacons.isNullOrEmpty()) {
-                    for (closestBeacon in closestBeacons) {
-                        Log.i(TAG, "Close beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
-                        if (!trackedBeacons.contains(closestBeacon)) {
-                            Log.i(TAG, "That beacon is new tracked beacon..")
+                    val closestBeacons = partition.first
+                    /*.minBy { beacon -> beacon.distance }*/
+                    if (!closestBeacons.isNullOrEmpty()) {
+                        for (closestBeacon in closestBeacons) {
+                            Log.i(TAG, "Close beacon with distance less than $MIN_DISTANCE is: $closestBeacon ")
+                            if (!trackedBeacons.contains(closestBeacon)) {
+                                Log.i(TAG, "That beacon is new tracked beacon..")
 
-                            try {
-                                proximityApiManager.addToTrackedProximityBeacons(closestBeacon)
-                                trackedBeacons.add(closestBeacon)
+                                try {
+                                    proximityApiManager.addToTrackedProximityBeacons(closestBeacon)
+                                    trackedBeacons.add(closestBeacon)
 
-                            } catch (e: Exception) {
-                                Log.e(
-                                    TAG,
-                                    "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
-                                )
+                                } catch (e: Exception) {
+                                    Log.e(
+                                        TAG,
+                                        "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
+                                    )
+                                }
+
+                            } else {
+                                Log.i(TAG, "Close beacon is already tracked..")
+                                proximityApiManager.updateBeaconDistance(closestBeacon)
                             }
-
-                        } else {
-                            Log.i(TAG, "Close beacon is already tracked..")
-                            proximityApiManager.updateBeaconDistance(closestBeacon)
                         }
+                    }
+                } else {
+                    if (!connectToNetworkToast.view.isShown) {
+                        connectToNetworkToast.show()
                     }
                 }
             }
