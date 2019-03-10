@@ -22,9 +22,9 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
-import kotlinx.android.synthetic.main.activity_nav.*
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
+import kotlinx.android.synthetic.main.content_navigation_drawer.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
@@ -81,6 +81,9 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         RunningAverageRssiFilter.setSampleExpirationMilliseconds(8000L)
 
         // BeaconManager.setDebug(true)
+
+        /*if(user != in project) //TODO
+        nav_view.menu.findItem(R.id.nav_management_section).isVisible = false*/
 
         spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
@@ -158,31 +161,28 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            /*if activity has back button
+            android.R.id.home -> {
+                    finish()
+                    true
+                }*/
+            R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
         when (item.itemId) {
-            R.id.nav_camera -> {
-                // Handle the camera action
+            R.id.nav_navigation -> {
             }
-            R.id.nav_gallery -> {
+            R.id.nav_info -> {
 
             }
-            R.id.nav_slideshow -> {
+            /*    R.id.nav_share -> {
 
-            }
+                }*/
             R.id.nav_manage -> {
-
-            }
-            R.id.nav_share -> {
-
-            }
-            R.id.nav_send -> {
 
             }
         }
@@ -190,17 +190,6 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
-
-
-    /* override fun onOptionsItemSelected(item: MenuItem): Boolean {
-         when (item.itemId) {
-             android.R.id.home -> {
-                 finish()
-                 return true
-             }
-         }
-         return super.onOptionsItemSelected(item)
-     }*/
 
     fun drawLocalizationPoints() {
         mapImageView.setImageBitmap(map)
