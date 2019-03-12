@@ -8,10 +8,10 @@ import android.widget.TextView
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 
 class BeaconSpinnerAdapter(
-    private val navigationActivity: NavigationActivity, @LayoutRes resource: Int,
+    private val navigateFragment: NavigateFragment, @LayoutRes resource: Int,
     private val objects: MutableList<BeaconInfo>
 ) :
-    ArrayAdapter<BeaconInfo>(navigationActivity, resource, objects) {
+    ArrayAdapter<BeaconInfo>(navigateFragment.activity, resource, objects) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val labelText = super.getView(position, convertView, parent) as TextView
@@ -34,10 +34,12 @@ class BeaconSpinnerAdapter(
             objects.sortBy { beaconInfo -> beaconInfo.distance }
             val nearestBeacon = objects[0]
             nearestBeacon.attachmentData.mapPosition?.let { position ->
-                val localizationPointsMap = navigationActivity.localizationPointsMap
-                if (localizationPointsMap[navigationActivity.theNearestLocationMarker] != position) {
-                    localizationPointsMap[navigationActivity.theNearestLocationMarker] = position
-                    navigationActivity.drawLocalizationPoints()
+                val localizationPointsMap = navigateFragment.localizationPointsMap
+                if (localizationPointsMap[navigateFragment.theNearestLocationMarker] != position) {
+                    localizationPointsMap[navigateFragment.theNearestLocationMarker] = position
+                    if (navigateFragment.isVisible) {
+                        navigateFragment.drawLocalizationPoints()
+                    }
                 }
             }
         }

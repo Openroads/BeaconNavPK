@@ -1,12 +1,12 @@
 package pk.edu.dariusz.beaconnavpk
 
+import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import org.altbeacon.beacon.Beacon
-import org.threeten.bp.Duration
 import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiConnector
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
@@ -18,7 +18,7 @@ import java.util.*
 
 
 class ProximityApiManager(
-    private val activity: NavigationActivity,
+    private val activity: Activity,
     private val spinnerNearbyBeaconsAdapter: BeaconSpinnerAdapter,
     private val proximityBeaconListToSync: MutableList<BeaconInfo>
 ) {
@@ -37,7 +37,7 @@ class ProximityApiManager(
         Log.i(TAG, "Getting proximity data for advertised id: $advertisedBeaconId")
 
         val beaconFromCache = beaconProximityAPICache[advertisedBeaconId]
-        if (beaconFromCache != null && isValidCache(beaconFromCache)) {
+        if (beaconFromCache != null && isValidCache(beaconFromCache.fetchDate)) {
             Log.i(TAG, "Taking beacon info from cache...")
             beaconFromCache.distance = beacon.distance
             addIfNotExist(beaconFromCache)
@@ -152,13 +152,5 @@ class ProximityApiManager(
         return false
     }
 
-    private fun isValidCache(beaconFromCache: BeaconInfo): Boolean {
-        val beaconInCacheInMinutes = Duration.between(beaconFromCache.fetchDate, LocalDateTime.now()).toMinutes()
-
-        return beaconInCacheInMinutes < CACHE_VALID_TIME_IN_MINUTES
-    }
-
     private val TAG = "ProximityApiManager_TAG"
-    private val CACHE_VALID_TIME_IN_MINUTES = 1
-
 }
