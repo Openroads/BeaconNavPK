@@ -23,3 +23,10 @@ fun isValidCache(syncTime: LocalDateTime): Boolean {
 fun isNotValidCache(syncTime: LocalDateTime): Boolean {
     return !isValidCache(syncTime)
 }
+
+
+/***************** COMMON CONSTANTS ***************/
+
+const val PREFERENCE_ACCOUNT = "pk.edu.dariusz.beaconnavpk.account"
+
+const val CHOOSE_ACCOUNT_RC = 67
