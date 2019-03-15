@@ -31,8 +31,12 @@ import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
 import pk.edu.dariusz.beaconnavpk.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
-class NavigateFragment : Fragment(), BeaconConsumer {
+class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
     private val TAG = "NavigateFragment_TAG"
+
+    override fun getIdentifier(): String {
+        return TAG
+    }
 
     private var message: String? = null
 

@@ -12,6 +12,7 @@ import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
+import pk.edu.dariusz.beaconnavpk.utils.IdentifiableElement
 
 class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AboutFragment.OnFragmentInteractionListener {
@@ -39,10 +40,10 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         displaySelectedScreen(R.id.nav_navigation)
     }
 
-    private var currentFragment: Fragment? = null
+    private var currentFragment: IdentifiableElement? = null
     private fun displaySelectedScreen(itemId: Int) {
 
-        var newFragment: Fragment? = null
+        var newFragment: IdentifiableElement? = null
         //creating fragment object
         when (itemId) {
             R.id.nav_navigation -> {
@@ -61,9 +62,10 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
         //replacing the currentFragment
         if (newFragment != null) {
-            if (currentFragment == null || currentFragment!!.id != newFragment.id) {
+
+            if (currentFragment == null || currentFragment!!.getIdentifier() != newFragment.getIdentifier()) {
                 val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-                ft.replace(R.id.content_frame, newFragment)
+                ft.replace(R.id.content_frame, newFragment as Fragment)
                 ft.commit()
                 currentFragment = newFragment
             }
