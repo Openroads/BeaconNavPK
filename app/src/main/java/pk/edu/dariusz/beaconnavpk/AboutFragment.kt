@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import pk.edu.dariusz.beaconnavpk.utils.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
 
 
 // TODO: Rename parameter arguments, choose names that match

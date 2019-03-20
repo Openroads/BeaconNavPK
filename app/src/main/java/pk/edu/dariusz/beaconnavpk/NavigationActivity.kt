@@ -16,7 +16,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
-import pk.edu.dariusz.beaconnavpk.utils.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
 import pk.edu.dariusz.beaconnavpk.utils.PREFERENCE_ACCOUNT
 
 class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,

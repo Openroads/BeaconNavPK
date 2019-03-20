@@ -28,6 +28,7 @@ import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
+import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
 import pk.edu.dariusz.beaconnavpk.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
