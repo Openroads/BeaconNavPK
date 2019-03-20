@@ -39,7 +39,13 @@ class WelcomeActivity : AppCompatActivity() {
                 }
             }
         }
-        accountName.setOnClickListener { chooseUserAccount() }
+        val accountName = accountSharedPref.getString(AccountManager.KEY_ACCOUNT_NAME, "")
+        if (accountName.isNotBlank()) {
+            pickedName.text = accountName
+        } else {
+            chooseUserAccount()
+        }
+        pickedName.setOnClickListener { chooseUserAccount() }
     }
 
     private fun verifyBluetooth(): Boolean {
@@ -139,9 +145,9 @@ class WelcomeActivity : AppCompatActivity() {
         if (requestCode == CHOOSE_ACCOUNT_RC) {
             if (resultCode == Activity.RESULT_OK) {
                 val name = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
-                accountName.text = name
+                pickedName.text = name
                 val editor = accountSharedPref.edit()
-                //editor.putString(AccountManager.KEY_ACCOUNT_NAME, name)
+                editor.putString(AccountManager.KEY_ACCOUNT_NAME, name)
                 editor.apply()
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 val string = accountSharedPref.getString(AccountManager.KEY_ACCOUNT_NAME, "")

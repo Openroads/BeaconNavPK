@@ -1,5 +1,8 @@
 package pk.edu.dariusz.beaconnavpk
 
+import android.accounts.AccountManager
+import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
@@ -10,12 +13,17 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
 import pk.edu.dariusz.beaconnavpk.utils.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.utils.PREFERENCE_ACCOUNT
 
 class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AboutFragment.OnFragmentInteractionListener {
+
+    private lateinit var accountSharedPref: SharedPreferences
+
     override fun onFragmentInteraction(uri: Uri) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -36,6 +44,12 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+
+        accountSharedPref = getSharedPreferences(PREFERENCE_ACCOUNT, Context.MODE_PRIVATE)
+        val accName = accountSharedPref.getString(AccountManager.KEY_ACCOUNT_NAME, "")
+        if (accName.isNotBlank()) {
+            nav_view.getHeaderView(0).findViewById<TextView>(R.id.accountEmail).text = accName
+        }
 
         displaySelectedScreen(R.id.nav_navigation)
     }
