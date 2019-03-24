@@ -1,5 +1,6 @@
 package pk.edu.dariusz.beaconnavpk
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
@@ -60,7 +61,8 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             gSignInAcc.email?.let { accEmail ->
                 nav_view.getHeaderView(0).findViewById<TextView>(R.id.accountEmail).text = accEmail
             }
-            /*gSignInAcc.photoUrl?.let { photoUri ->
+            /*val photoUrl = gSignInAcc.photoUrl //TODO picture to download from web
+            photoUrl?.let { photoUri ->
                 val findViewById = nav_view.getHeaderView(0).findViewById<ImageView>(R.id.userPhotoImageView)
                 findViewById.setImageURI(null)
                 findViewById.setImageURI(photoUri)
@@ -84,6 +86,12 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             }
             R.id.nav_manage -> {
 
+            }
+            R.id.nav_sign_out -> {
+                val intent = Intent(this, WelcomeActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                intent.putExtra(WelcomeActivity.SIGNING_OUT_KEY, true)
+                startActivity(intent)
             }
         }
 

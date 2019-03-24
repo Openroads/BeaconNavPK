@@ -46,7 +46,6 @@ class WelcomeActivity : AppCompatActivity() {
 
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
-            .requestProfile()
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
@@ -74,13 +73,15 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         sign_out_button.setOnClickListener {
-            googleSignInClient.signOut().addOnCompleteListener(this) {
-                if (it.isComplete && it.isSuccessful) {
-                    Toast.makeText(this, "Successfully signed-out.", Toast.LENGTH_SHORT).show()
-                    updateUIForAccount(null)
-                }
-            }
+            signOutUser()
         }
+
+        //activity call be called from other when sign out clicked
+        val signingOut = intent.extras?.getBoolean(SIGNING_OUT_KEY)
+        if (signingOut != null && signingOut) {
+            signOutUser()
+        }
+
 
         /*//TODO old way to choose account
         accountSharedPref = getSharedPreferences(PREFERENCE_ACCOUNT, Context.MODE_PRIVATE)
@@ -91,6 +92,15 @@ class WelcomeActivity : AppCompatActivity() {
              chooseUserAccount()
          }
          accountNameTextView.setOnClickListener { chooseUserAccount() }*/
+    }
+
+    private fun signOutUser() {
+        googleSignInClient.signOut().addOnCompleteListener(this) {
+            if (it.isComplete && it.isSuccessful) {
+                Toast.makeText(this, "Successfully signed-out.", Toast.LENGTH_SHORT).show()
+                updateUIForAccount(null)
+            }
+        }
     }
 
     private fun checkNetworkAndShowInfo(activity: Activity): Boolean {
@@ -316,6 +326,7 @@ class WelcomeActivity : AppCompatActivity() {
 
     companion object {
         val IS_EDITOR_KEY = "IS_EDITOR"
+        val SIGNING_OUT_KEY = "SIGNING_OUT"
     }
 
     //TODO to sign out??
