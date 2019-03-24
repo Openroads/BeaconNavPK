@@ -3,13 +3,13 @@ package pk.edu.dariusz.beaconnavpk.connectors
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import pk.edu.dariusz.beaconnavpk.connectors.model.GetBeaconListResponse
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedResponse
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 
 
 interface ProximityApiConnector {
@@ -20,6 +20,15 @@ interface ProximityApiConnector {
     @POST("./beaconinfo:getforobserved?key=AIzaSyBuPg0CSCO_tZ07Oke1EbTLSMGZIxEy6fg")
     fun getBeaconInfo(@Body request: GetObservedRequest): Observable<GetObservedResponse>
 
+    @GET("./beacons")
+    fun getBeaconList(
+        @Header("Authorization") authHeader: String,
+        @Query("q") filter: String,
+        @Query("pageSize") pageSize: Int,
+        @Query("pageToken") pageToken: String = ""
+
+    ): Observable<GetBeaconListResponse>
+
 
     /*********************************************************************************************
      * CONFIGURATION
@@ -28,9 +37,7 @@ interface ProximityApiConnector {
         private const val PROXIMITY_API_ENDPOINT: String = "https://proximitybeacon.googleapis.com/v1beta1/"
 
         fun create(): ProximityApiConnector {
-
-            val interceptor = HttpLoggingInterceptor()
-            interceptor.level = HttpLoggingInterceptor.Level.BODY
+            val interceptor = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
             val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 
             val retrofit = Retrofit.Builder()

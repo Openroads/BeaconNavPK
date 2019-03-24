@@ -17,4 +17,5 @@
     <string name="hello_blank_fragment">Here will be shown information about application, how to use application and who
         made it.
     </string>
+    <string name="empty_account_welcome_activity">Select google account to use</string>
 </resources>

@@ -27,6 +27,18 @@ fun isNotValidCache(syncTime: LocalDateTime): Boolean {
 
 /***************** COMMON CONSTANTS ***************/
 
+const val BEARER = "Bearer "
+
 const val PREFERENCE_ACCOUNT = "pk.edu.dariusz.beaconnavpk.account"
 
-const val CHOOSE_ACCOUNT_RC = 67
+const val CHOOSE_ACCOUNT_RC = 21
+
+const val AUTHORIZE_BEACON_EDIT_RC = 22
+
+const val SIGN_IN_GOOGLE_RC = 23
+
+const val REAUTHORIZE_RC = 24
+
+/******************* HTTP ************/
+
+const val ACCESS_FORBIDDEN = 403

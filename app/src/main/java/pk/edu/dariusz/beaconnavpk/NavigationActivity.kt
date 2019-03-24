@@ -1,8 +1,5 @@
 package pk.edu.dariusz.beaconnavpk
 
-import android.accounts.AccountManager
-import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
@@ -14,15 +11,17 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
 import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
-import pk.edu.dariusz.beaconnavpk.utils.PREFERENCE_ACCOUNT
 
 class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AboutFragment.OnFragmentInteractionListener {
 
-    private lateinit var accountSharedPref: SharedPreferences
+    //private lateinit var accountSharedPref: SharedPreferences
+    private var googleSignInAccount: GoogleSignInAccount? = null
 
     override fun onFragmentInteraction(uri: Uri) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -31,9 +30,13 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_navigation_drawer)
+        googleSignInAccount = GoogleSignIn.getLastSignedInAccount(this)
 
-        /*if(user != in project) //TODO
-        nav_view.menu.findItem(R.id.nav_management_section).isVisible = false*/
+        val editPermission = intent.extras?.getBoolean(WelcomeActivity.IS_EDITOR_KEY)
+
+        if (editPermission != null) {
+            nav_view.menu.findItem(R.id.nav_management_section).isVisible = editPermission
+        }
 
         setSupportActionBar(toolbar)
 
@@ -45,10 +48,23 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
 
         nav_view.setNavigationItemSelectedListener(this)
 
-        accountSharedPref = getSharedPreferences(PREFERENCE_ACCOUNT, Context.MODE_PRIVATE)
-        val accName = accountSharedPref.getString(AccountManager.KEY_ACCOUNT_NAME, "")
-        if (accName.isNotBlank()) {
-            nav_view.getHeaderView(0).findViewById<TextView>(R.id.accountEmail).text = accName
+//old way (probably to remove)
+//        accountSharedPref = getSharedPreferences(PREFERENCE_ACCOUNT, Context.MODE_PRIVATE)
+//        val accName = accountSharedPref.getString(AccountManager.KEY_ACCOUNT_NAME, "")
+        googleSignInAccount?.let { gSignInAcc ->
+            val accName = gSignInAcc.displayName
+            if (!accName.isNullOrBlank()) {
+                nav_view.getHeaderView(0).findViewById<TextView>(R.id.accountName).text = accName
+            }
+
+            gSignInAcc.email?.let { accEmail ->
+                nav_view.getHeaderView(0).findViewById<TextView>(R.id.accountEmail).text = accEmail
+            }
+            /*gSignInAcc.photoUrl?.let { photoUri ->
+                val findViewById = nav_view.getHeaderView(0).findViewById<ImageView>(R.id.userPhotoImageView)
+                findViewById.setImageURI(null)
+                findViewById.setImageURI(photoUri)
+            }*/
         }
 
         displaySelectedScreen(R.id.nav_navigation)
@@ -66,9 +82,6 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             R.id.nav_info -> {
                 newFragment = AboutFragment.newInstance("aaa", "info")
             }
-            /*    R.id.nav_share -> {
-
-                }*/
             R.id.nav_manage -> {
 
             }
