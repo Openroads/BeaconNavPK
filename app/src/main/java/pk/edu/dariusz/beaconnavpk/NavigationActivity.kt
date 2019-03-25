@@ -11,9 +11,11 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
 import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
@@ -61,12 +63,11 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
             gSignInAcc.email?.let { accEmail ->
                 nav_view.getHeaderView(0).findViewById<TextView>(R.id.accountEmail).text = accEmail
             }
-            /*val photoUrl = gSignInAcc.photoUrl //TODO picture to download from web
-            photoUrl?.let { photoUri ->
-                val findViewById = nav_view.getHeaderView(0).findViewById<ImageView>(R.id.userPhotoImageView)
-                findViewById.setImageURI(null)
-                findViewById.setImageURI(photoUri)
-            }*/
+
+            gSignInAcc.photoUrl?.let { pUrl ->
+                val userPhotoImageView = nav_view.getHeaderView(0).findViewById<ImageView>(R.id.userPhotoImageView)
+                Picasso.with(this).load(pUrl).resize(250, 250).into(userPhotoImageView)
+            }
         }
 
         displaySelectedScreen(R.id.nav_navigation)
