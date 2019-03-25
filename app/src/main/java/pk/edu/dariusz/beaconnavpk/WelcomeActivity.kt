@@ -30,6 +30,7 @@ import org.altbeacon.beacon.BeaconManager
 import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiConnector
 import pk.edu.dariusz.beaconnavpk.utils.*
 import retrofit2.HttpException
+import java.lang.ref.WeakReference
 
 @Suppress("PrivatePropertyName")
 class WelcomeActivity : AppCompatActivity() {
@@ -143,7 +144,7 @@ class WelcomeActivity : AppCompatActivity() {
     private fun designatePermission() {
         progressBar.visibility = View.VISIBLE
         try {
-            PrepareTokenAndCallTask(this) { token ->
+            PrepareTokenAndCallTask(WeakReference(this)) { token ->
                 proximityApiConnector.getBeaconList(BEARER + token, "status:active", 1)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

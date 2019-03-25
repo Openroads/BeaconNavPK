@@ -8,10 +8,11 @@ import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import pk.edu.dariusz.beaconnavpk.utils.REAUTHORIZE_RC
+import java.lang.ref.WeakReference
 
 class PrepareTokenAndCallTask(
-    private val activity: Activity,
-    val resultConsumer: (String?) -> Unit
+    private val activity: WeakReference<Activity>,
+    private val resultConsumer: (String?) -> Unit
 ) : AsyncTask<String, Unit, String>() {
 
     private val TAG = "PrepareTokenAndCallTask"
@@ -19,21 +20,21 @@ class PrepareTokenAndCallTask(
     override fun doInBackground(vararg scopes: String): String? {
         try {
             val credential = GoogleAccountCredential.usingOAuth2(
-                activity,
+                activity.get(),
                 scopes.toList()
             )
-            val lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity)
+            val lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity.get())
             credential.selectedAccount = lastSignedInAccount?.account
 
             return credential.token //or val token = GoogleAuthUtil.getToken(this@WelcomeActivity, accountName, SCOPE)
         } catch (userRecoverableException: UserRecoverableAuthException) {
             Log.e(TAG, "UserRecoverableAuthException while obtaining credential token", userRecoverableException)
             Toast.makeText(
-                activity,
+                activity.get(),
                 "Missing permission: " + userRecoverableException.localizedMessage,
                 Toast.LENGTH_LONG
             ).show()
-            activity.startActivityForResult(userRecoverableException.intent, REAUTHORIZE_RC);
+            activity.get()?.startActivityForResult(userRecoverableException.intent, REAUTHORIZE_RC)
         } /*catch (e: Exception) { //TODO handle this out of task  ??
             e.printStackTrace()
             Log.e(TAG, "Exception while obtaining credential token", e)
