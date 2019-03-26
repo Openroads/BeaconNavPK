@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.navigation
 
 import android.content.Context
 import android.util.AttributeSet

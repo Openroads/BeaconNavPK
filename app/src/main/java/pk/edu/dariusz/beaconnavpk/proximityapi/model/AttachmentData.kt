@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk.model
+package pk.edu.dariusz.beaconnavpk.proximityapi.model
 
 /**
  * Class to store data extracted from beacon attachment info list

@@ -1,11 +1,11 @@
-package pk.edu.dariusz.beaconnavpk.connectors
+package pk.edu.dariusz.beaconnavpk.proximityapi.connectors
 
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import pk.edu.dariusz.beaconnavpk.connectors.model.GetBeaconListResponse
-import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
-import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedResponse
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetBeaconListResponse
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedRequest
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedResponse
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory

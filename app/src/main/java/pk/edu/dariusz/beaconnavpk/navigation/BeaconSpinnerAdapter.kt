@@ -1,11 +1,11 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.navigation
 
 import android.support.annotation.LayoutRes
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.BeaconInfo
 
 class BeaconSpinnerAdapter(
     private val navigateFragment: NavigateFragment, @LayoutRes resource: Int,

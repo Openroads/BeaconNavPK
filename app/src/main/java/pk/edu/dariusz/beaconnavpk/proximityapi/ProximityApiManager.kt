@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.proximityapi
 
 import android.app.Activity
 import android.util.Log
@@ -8,10 +8,11 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import org.altbeacon.beacon.Beacon
 import org.threeten.bp.LocalDateTime
-import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiConnector
-import pk.edu.dariusz.beaconnavpk.connectors.model.GetObservedRequest
-import pk.edu.dariusz.beaconnavpk.connectors.model.Observation
-import pk.edu.dariusz.beaconnavpk.model.*
+import pk.edu.dariusz.beaconnavpk.navigation.BeaconSpinnerAdapter
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedRequest
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.Observation
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.*
 import pk.edu.dariusz.beaconnavpk.utils.*
 import java.text.SimpleDateFormat
 import java.util.*

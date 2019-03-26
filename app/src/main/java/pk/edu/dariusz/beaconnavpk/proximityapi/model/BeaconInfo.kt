@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk.model
+package pk.edu.dariusz.beaconnavpk.proximityapi.model
 
 import org.threeten.bp.LocalDateTime
 

@@ -14,11 +14,11 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-                android:name=".NavigationActivity"
+                android:name=".main.NavigationMainActivity"
                 android:label="@string/title_activity_navigation_drawer"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity android:name=".WelcomeActivity"> <!-- android:theme="@style/Theme.AppCompat.NoActionBar" -->
+        <activity android:name=".main.WelcomeActivity"> <!-- android:theme="@style/Theme.AppCompat.NoActionBar" -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.navigation
 
 import android.content.Intent
 import android.net.Uri
@@ -18,7 +18,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_navigation_drawer.*
 import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
-import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.R
+import pk.edu.dariusz.beaconnavpk.about.AboutFragment
+import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.main.WelcomeActivity
 
 class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AboutFragment.OnFragmentInteractionListener {
@@ -44,7 +47,9 @@ class NavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemS
         setSupportActionBar(toolbar)
 
         val toggle = ActionBarDrawerToggle(
-            this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this, drawer_layout, toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()

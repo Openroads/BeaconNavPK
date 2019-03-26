@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.main
 
 import android.Manifest
 import android.app.Activity
@@ -27,7 +27,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_welcome.*
 import org.altbeacon.beacon.BeaconManager
-import pk.edu.dariusz.beaconnavpk.connectors.ProximityApiConnector
+import pk.edu.dariusz.beaconnavpk.R
+import pk.edu.dariusz.beaconnavpk.common.PrepareTokenAndCallTask
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector
 import pk.edu.dariusz.beaconnavpk.utils.*
 import retrofit2.HttpException
 import java.lang.ref.WeakReference
@@ -124,7 +126,7 @@ class WelcomeActivity : AppCompatActivity() {
 
     private fun startNavigationActivity(canEdit: Boolean) {
         progressBar.visibility = View.GONE
-        val intent = Intent(this, NavigationActivity::class.java)
+        val intent = Intent(this, NavigationMainActivity::class.java)
         intent.putExtra(IS_EDITOR_KEY, canEdit)
         startActivity(intent)
     }

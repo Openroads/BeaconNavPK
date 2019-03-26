@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.common
 
 import android.app.Activity
 import android.os.AsyncTask

@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.about
 
 import android.content.Context
 import android.net.Uri
@@ -9,7 +9,8 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.R
+import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
 
 
 // TODO: Rename parameter arguments, choose names that match

@@ -1,6 +1,6 @@
-package pk.edu.dariusz.beaconnavpk.connectors.model
+package pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model
 
-import pk.edu.dariusz.beaconnavpk.model.AdvertisedId
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.AdvertisedId
 
 data class GetObservedRequest(val observations: List<Observation>, val namespacedTypes: String)
 

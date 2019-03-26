@@ -1,4 +1,4 @@
-package pk.edu.dariusz.beaconnavpk
+package pk.edu.dariusz.beaconnavpk.navigation
 
 import android.content.Context
 import android.content.Intent
@@ -26,10 +26,12 @@ import kotlinx.android.synthetic.main.fragment_navigate.*
 import org.altbeacon.beacon.*
 import org.altbeacon.beacon.service.RunningAverageRssiFilter
 import org.threeten.bp.LocalDateTime
-import pk.edu.dariusz.beaconnavpk.model.AttachmentInfo
-import pk.edu.dariusz.beaconnavpk.model.BeaconInfo
-import pk.edu.dariusz.beaconnavpk.model.IdentifiableElement
-import pk.edu.dariusz.beaconnavpk.model.Position
+import pk.edu.dariusz.beaconnavpk.R
+import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.proximityapi.ProximityApiManager
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.AttachmentInfo
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.BeaconInfo
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
 class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
@@ -114,7 +116,11 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         }
 
         proximityApiManager =
-            ProximityApiManager(requireActivity(), spinnerNearbyBeaconsAdapter, trackedProximityBeacons)
+            ProximityApiManager(
+                requireActivity(),
+                spinnerNearbyBeaconsAdapter,
+                trackedProximityBeacons
+            )
 
         show_message_button.setOnClickListener {
             Log.i(TAG, "Show message button onClick")
