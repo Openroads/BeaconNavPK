@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -30,6 +31,7 @@ import org.altbeacon.beacon.BeaconManager
 import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.common.PrepareTokenAndCallTask
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector.Companion.PROXIMITY_BEACON_SCOPE_STRING
 import pk.edu.dariusz.beaconnavpk.utils.*
 import retrofit2.HttpException
 import java.lang.ref.WeakReference
@@ -147,7 +149,7 @@ class WelcomeActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         try {
             PrepareTokenAndCallTask(WeakReference(this)) { token ->
-                proximityApiConnector.getBeaconList(BEARER + token, "status:active", 1)
+                proximityApiConnector.getBeaconList(BEARER + token, pageSize = 1)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -171,6 +173,14 @@ class WelcomeActivity : AppCompatActivity() {
                         }
                     )
             }.execute(PROXIMITY_BEACON_SCOPE_STRING)
+        } catch (userRecoverableException: UserRecoverableAuthException) {
+            Log.e(TAG, "UserRecoverableAuthException while obtaining credential token", userRecoverableException)
+            Toast.makeText(
+                this,
+                "Missing permission: " + userRecoverableException.localizedMessage,
+                Toast.LENGTH_LONG
+            ).show()
+            startActivityForResult(userRecoverableException.intent, REAUTHORIZE_RC)
         } catch (exception: Exception) {
             Log.e(TAG, "Exception from prepare token task ", exception)
             progressBar.visibility = View.GONE
@@ -323,7 +333,6 @@ class WelcomeActivity : AppCompatActivity() {
     private val PERMISSION_REQUEST_LOCATION_CODE = 1
     private val TAG = "WelcomeActivity_TAG"
     private val SCOPE = "oauth2:https://www.googleapis.com/auth/userlocation.beacon.registry"
-    private val PROXIMITY_BEACON_SCOPE_STRING = "https://www.googleapis.com/auth/userlocation.beacon.registry"
     private val SCOPE_PROXIMITY_BEACON: Scope = Scope(PROXIMITY_BEACON_SCOPE_STRING)
     private val SCOPE_EMAIL = Scope(Scopes.EMAIL)
 

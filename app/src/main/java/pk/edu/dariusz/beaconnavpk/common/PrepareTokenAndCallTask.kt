@@ -1,49 +1,34 @@
 package pk.edu.dariusz.beaconnavpk.common
 
-import android.app.Activity
+import android.content.Context
 import android.os.AsyncTask
 import android.util.Log
-import android.widget.Toast
-import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import pk.edu.dariusz.beaconnavpk.utils.REAUTHORIZE_RC
 import java.lang.ref.WeakReference
 
 class PrepareTokenAndCallTask(
-    private val activity: WeakReference<Activity>,
+    private val context: WeakReference<Context>,
     private val resultConsumer: (String?) -> Unit
 ) : AsyncTask<String, Unit, String>() {
 
     private val TAG = "PrepareTokenAndCallTask"
 
     override fun doInBackground(vararg scopes: String): String? {
-        try {
-            val credential = GoogleAccountCredential.usingOAuth2(
-                activity.get(),
-                scopes.toList()
-            )
-            val lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(activity.get())
-            credential.selectedAccount = lastSignedInAccount?.account
+        Log.i(TAG, "Preparing credential token for scopes: $scopes")
+        val credential = GoogleAccountCredential.usingOAuth2(
+            context.get(),
+            scopes.toList()
+        )
+        val lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(context.get())
+        credential.selectedAccount = lastSignedInAccount?.account
 
-            return credential.token //or val token = GoogleAuthUtil.getToken(this@WelcomeActivity, accountName, SCOPE)
-        } catch (userRecoverableException: UserRecoverableAuthException) {
-            Log.e(TAG, "UserRecoverableAuthException while obtaining credential token", userRecoverableException)
-            Toast.makeText(
-                activity.get(),
-                "Missing permission: " + userRecoverableException.localizedMessage,
-                Toast.LENGTH_LONG
-            ).show()
-            activity.get()?.startActivityForResult(userRecoverableException.intent, REAUTHORIZE_RC)
-        } /*catch (e: Exception) { //TODO handle this out of task  ??
-            e.printStackTrace()
-            Log.e(TAG, "Exception while obtaining credential token", e)
-        }*/
-        return null
+        return credential.token //or val token = GoogleAuthUtil.getToken(this@WelcomeActivity, accountName, SCOPE)
     }
 
     override fun onPostExecute(result: String?) {
         super.onPostExecute(result)
+        Log.i(TAG, "Post execute with token: " + result?.subSequence(0, 5) + " start executing result consumer..")
         resultConsumer(result)
     }
 }

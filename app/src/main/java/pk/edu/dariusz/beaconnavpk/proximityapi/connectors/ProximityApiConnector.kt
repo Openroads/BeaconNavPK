@@ -23,9 +23,9 @@ interface ProximityApiConnector {
     @GET("./beacons")
     fun getBeaconList(
         @Header("Authorization") authHeader: String,
-        @Query("q") filter: String,
-        @Query("pageSize") pageSize: Int,
-        @Query("pageToken") pageToken: String = ""
+        @Query("q") filter: String? = null,
+        @Query("pageSize") pageSize: Int? = null,
+        @Query("pageToken") pageToken: String? = null
 
     ): Observable<GetBeaconListResponse>
 
@@ -34,6 +34,9 @@ interface ProximityApiConnector {
      * CONFIGURATION
      ********************************************************************************************/
     companion object {
+        val PROXIMITY_BEACON_SCOPE_STRING = "https://www.googleapis.com/auth/userlocation.beacon.registry"
+
+
         private const val PROXIMITY_API_ENDPOINT: String = "https://proximitybeacon.googleapis.com/v1beta1/"
 
         fun create(): ProximityApiConnector {

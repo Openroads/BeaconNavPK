@@ -21,16 +21,22 @@ import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
 import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.about.AboutFragment
 import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.manage.ManageFragment
 import pk.edu.dariusz.beaconnavpk.navigation.NavigateFragment
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.BeaconEntry
 
 class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-    AboutFragment.OnFragmentInteractionListener {
+    AboutFragment.OnFragmentInteractionListener, ManageFragment.OnListFragmentInteractionListener {
 
     //private lateinit var accountSharedPref: SharedPreferences
     private var googleSignInAccount: GoogleSignInAccount? = null
 
     override fun onFragmentInteraction(uri: Uri) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onListFragmentInteraction(item: BeaconEntry?) {
+        println("Item: $item")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,7 +97,7 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
                 newFragment = AboutFragment.newInstance("aaa", "info")
             }
             R.id.nav_manage -> {
-
+                newFragment = ManageFragment.newInstance(1)
             }
             R.id.nav_sign_out -> {
                 val intent = Intent(this, WelcomeActivity::class.java)
