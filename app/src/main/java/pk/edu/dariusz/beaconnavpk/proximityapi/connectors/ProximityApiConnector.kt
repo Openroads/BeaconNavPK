@@ -3,6 +3,7 @@ package pk.edu.dariusz.beaconnavpk.proximityapi.connectors
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetBeaconAttachmentListResponse
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetBeaconListResponse
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedResponse
@@ -20,15 +21,19 @@ interface ProximityApiConnector {
     @POST("./beaconinfo:getforobserved?key=AIzaSyBuPg0CSCO_tZ07Oke1EbTLSMGZIxEy6fg")
     fun getBeaconInfo(@Body request: GetObservedRequest): Observable<GetObservedResponse>
 
-    @GET("./beacons")
+    @GET("beacons")
     fun getBeaconList(
         @Header("Authorization") authHeader: String,
         @Query("q") filter: String? = null,
         @Query("pageSize") pageSize: Int? = null,
         @Query("pageToken") pageToken: String? = null
-
     ): Observable<GetBeaconListResponse>
 
+    @GET("{beaconName}/attachments")
+    fun getAttachmentList(
+        @Header("Authorization") authHeader: String,
+        @Path("beaconName", encoded = true) beaconName: String
+    ): Observable<GetBeaconAttachmentListResponse>
 
     /*********************************************************************************************
      * CONFIGURATION
@@ -39,7 +44,12 @@ interface ProximityApiConnector {
 
         private const val PROXIMITY_API_ENDPOINT: String = "https://proximitybeacon.googleapis.com/v1beta1/"
 
+        private val MOCK = true
+
         fun create(): ProximityApiConnector {
+            if (MOCK) {
+                return ProximityApiConnectorMock()
+            }
             val interceptor = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
             val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 

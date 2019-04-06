@@ -116,16 +116,22 @@ class ManageFragment : Fragment(), IdentifiableElement {
             )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .flatMapIterable { beaconListResponse ->
+                    nextPageToken = beaconListResponse.nextPageToken
+                    totalCount = beaconListResponse.totalCount.toInt()
+                    if (currentPage != PAGE_START) {
+                        beaconItemRecyclerViewAdapter.removeLoading()
+                    }
+                    beaconItemRecyclerViewAdapter.addAll(beaconListResponse.beacons)
+                    beaconListResponse.beacons
+                }
+                .flatMap { beacon ->
+                    proximityApiConnector.getAttachmentList(BEARER + token, beacon.beaconName)
+                        .subscribeOn(Schedulers.io())
+                }
                 .subscribe(
                     { response ->
-                        nextPageToken = response.nextPageToken
-                        totalCount = response.totalCount.toInt()
-                        if (currentPage != PAGE_START) {
-                            beaconItemRecyclerViewAdapter.removeLoading()
-                        }
-                        beaconItemRecyclerViewAdapter.addAll(response.beacons)
-
-
+                        response.attachments
                     },
                     {
                         Log.e(TAG, "Error while fetching beacons..", it)
@@ -143,6 +149,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
 
         }.execute(PROXIMITY_BEACON_SCOPE_STRING)
     }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
