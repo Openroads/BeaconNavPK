@@ -112,9 +112,8 @@ class BeaconItemRecyclerViewAdapter(
 
     inner class ViewHolder(private val mView: View) : BaseViewHolder(mView) {
 
-        private val mIdStatusView: TextView = mView.bStatus
-        private val mIdView: TextView = mView.bName
-        private val mContentView: TextView = mView.bDescription
+        private val mIdView: TextView = mView.manageLocationName
+        private val mContentView: TextView = mView.manageLocationDesc
 
         init {
             mView.setOnClickListener(mOnClickListener)

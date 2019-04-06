@@ -17,10 +17,16 @@ class ProximityApiConnectorMock : ProximityApiConnector {
         pageSize: Int?,
         pageToken: String?
     ): Observable<GetBeaconListResponse> {
-        Thread.sleep(600)
+//        Thread.sleep(600)
         val beacons: MutableList<BeaconEntry> = mutableListOf()
         for (i in 0..10) {
-            beacons.add(BeaconEntry("beaconName$i", AdvertisedId(id = "advertisedId$i"), "Blablabla"))
+            beacons.add(
+                BeaconEntry(
+                    "Sala g$i",
+                    AdvertisedId(id = "advertisedId$i"),
+                    "Proszę zaczekać. Jadę opóźniony i będę za 15 minut. Przepraszam za niedogodności."
+                )
+            )
         }
 
         return Observable.just(GetBeaconListResponse(beacons, "dummyToken", beacons.size.toString()))
@@ -30,12 +36,12 @@ class ProximityApiConnectorMock : ProximityApiConnector {
         authHeader: String,
         beaconName: String
     ): Observable<GetBeaconAttachmentListResponse> {
-        Thread.sleep(500)
+//        Thread.sleep(500)
         val attachmentList: MutableList<AttachmentEntry> = mutableListOf()
         for (i in 0..5) {
             attachmentList.add(
                 AttachmentEntry(
-                    "attachmentName$i", "namespace", "blabla",
+                    "attachmentName$i", "namespace", "Proszę zaczekać. Blablabla.",
                     LocalDateTime.now().toString()
                 )
             )
