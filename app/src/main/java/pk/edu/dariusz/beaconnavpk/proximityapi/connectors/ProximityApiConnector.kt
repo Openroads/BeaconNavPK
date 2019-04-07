@@ -44,7 +44,7 @@ interface ProximityApiConnector {
 
         private const val PROXIMITY_API_ENDPOINT: String = "https://proximitybeacon.googleapis.com/v1beta1/"
 
-        private val MOCK = true
+        private val MOCK = false
 
         fun create(): ProximityApiConnector {
             if (MOCK) {

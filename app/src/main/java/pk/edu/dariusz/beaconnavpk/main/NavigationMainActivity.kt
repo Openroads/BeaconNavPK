@@ -22,8 +22,8 @@ import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.about.AboutFragment
 import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
 import pk.edu.dariusz.beaconnavpk.manage.ManageFragment
+import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.navigation.NavigateFragment
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.BeaconEntry
 
 class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     AboutFragment.OnFragmentInteractionListener, ManageFragment.OnListFragmentInteractionListener {
@@ -35,7 +35,7 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onListFragmentInteraction(item: BeaconEntry?) {
+    override fun onListFragmentInteraction(item: BeaconManaged?) {
         println("Item: $item")
     }
 

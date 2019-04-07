@@ -9,11 +9,11 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_manage_item.view.*
 import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.manage.ManageFragment.OnListFragmentInteractionListener
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.BeaconEntry
-import pk.edu.dariusz.beaconnavpk.proximityapi.model.AdvertisedId
+import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.AttachmentEntry
 
 class BeaconItemRecyclerViewAdapter(
-    private val mValues: MutableList<BeaconEntry>,
+    private val mValues: MutableList<BeaconManaged>,
     private val mListener: OnListFragmentInteractionListener?
 ) : RecyclerView.Adapter<BaseViewHolder>() {
 
@@ -25,7 +25,7 @@ class BeaconItemRecyclerViewAdapter(
 
     init {
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as BeaconEntry
+            val item = v.tag as BeaconManaged
 
             mListener?.onListFragmentInteraction(item)
         }
@@ -56,18 +56,18 @@ class BeaconItemRecyclerViewAdapter(
         }
     }
 
-    fun add(response: BeaconEntry) {
+    fun add(response: BeaconManaged) {
         mValues.add(response)
         notifyItemInserted(mValues.size - 1)
     }
 
-    fun addAll(beaconItems: List<BeaconEntry>) {
+    fun addAll(beaconItems: List<BeaconManaged>) {
         for (response in beaconItems) {
             add(response)
         }
     }
 
-    private fun remove(postItems: BeaconEntry?) {
+    private fun remove(postItems: BeaconManaged?) {
         val position = mValues.indexOf(postItems)
         if (position > -1) {
             mValues.removeAt(position)
@@ -77,7 +77,12 @@ class BeaconItemRecyclerViewAdapter(
 
     fun addLoading() {
         isLoaderVisible = true
-        add(BeaconEntry("dummyName", AdvertisedId(id = "d"), "dummyDesc"))
+        add(
+            BeaconManaged(
+                "dummyName", AttachmentEntry("d", "d", "d", "d"),
+                null
+            )
+        )
     }
 
     fun removeLoading() {
@@ -96,7 +101,7 @@ class BeaconItemRecyclerViewAdapter(
         }
     }
 
-    fun getItem(position: Int): BeaconEntry? {
+    fun getItem(position: Int): BeaconManaged? {
         return mValues[position]
     }
 
@@ -125,8 +130,8 @@ class BeaconItemRecyclerViewAdapter(
             super.onBind(position)
             val item = mValues[position]
             mView.tag = item
-            mIdView.text = item.beaconName
-            mContentView.text = item.description
+            mIdView.text = item.locationNameAttachment.getDataDecoded()
+            mContentView.text = item.messageAttachment?.getDataDecoded() ?: ""
         }
     }
 

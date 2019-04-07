@@ -16,10 +16,15 @@ import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
 import pk.edu.dariusz.beaconnavpk.common.PrepareTokenAndCallTask
 import pk.edu.dariusz.beaconnavpk.manage.PaginationScrollListener.Companion.PAGE_SIZE
+import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector.Companion.PROXIMITY_BEACON_SCOPE_STRING
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.BeaconEntry
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.AttachmentEntry
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetBeaconAttachmentListResponse
 import pk.edu.dariusz.beaconnavpk.utils.BEARER
+import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
+import pk.edu.dariusz.beaconnavpk.utils.MESSAGE_TYPE
+import pk.edu.dariusz.beaconnavpk.utils.getType
 import java.lang.ref.WeakReference
 
 /**
@@ -117,36 +122,60 @@ class ManageFragment : Fragment(), IdentifiableElement {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMapIterable { beaconListResponse ->
+                    if (pageToken == null) {
+                        totalCount = beaconListResponse.totalCount.toInt()
+                    }
                     nextPageToken = beaconListResponse.nextPageToken
-                    totalCount = beaconListResponse.totalCount.toInt()
                     if (currentPage != PAGE_START) {
                         beaconItemRecyclerViewAdapter.removeLoading()
                     }
-                    beaconItemRecyclerViewAdapter.addAll(beaconListResponse.beacons)
                     beaconListResponse.beacons
                 }
                 .flatMap { beacon ->
                     proximityApiConnector.getAttachmentList(BEARER + token, beacon.beaconName)
                         .subscribeOn(Schedulers.io())
+                        .filter { t: GetBeaconAttachmentListResponse ->
+                            if (t.attachments.isNullOrEmpty() || t.attachments.none { attachmentEntry ->
+                                    LOCATION_NAME == getType(attachmentEntry.namespacedType)
+                                }) {
+                                Log.e(
+                                    TAG,
+                                    "Beacon: ${beacon.beaconName} not configured. Missing location name in attachments"
+                                )
+                                totalCount--
+                                return@filter false
+                            }
+                            true
+                        }
+                        .map { attachmentListResponse ->
+                            var locationNameAttachment: AttachmentEntry? = null
+                            var messageAttachment: AttachmentEntry? = null
+
+                            for (attachmentEntry in attachmentListResponse.attachments!!) {
+                                val type = getType(attachmentEntry.namespacedType)
+                                when (type) {
+                                    LOCATION_NAME -> locationNameAttachment = attachmentEntry
+                                    MESSAGE_TYPE -> messageAttachment = attachmentEntry
+                                }
+                            }
+                            BeaconManaged(beacon.beaconName, locationNameAttachment!!, messageAttachment)
+                        }
                 }
+                .toList()
                 .subscribe(
-                    { response ->
-                        response.attachments
-                    },
-                    {
-                        Log.e(TAG, "Error while fetching beacons..", it)
-                    },
-                    {
+                    { beaconManagedList ->
+                        beaconItemRecyclerViewAdapter.addAll(beaconManagedList)
                         if (beaconItemRecyclerViewAdapter.itemCount < totalCount) {
                             beaconItemRecyclerViewAdapter.addLoading()
                         } else {
                             isLastPage = true
                         }
                         isLoading = false
+                    },
+                    {
+                        Log.e(TAG, "Error while fetching beacons..", it)
                     }
                 )
-
-
         }.execute(PROXIMITY_BEACON_SCOPE_STRING)
     }
 
@@ -166,7 +195,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
     }
 
     interface OnListFragmentInteractionListener {
-        fun onListFragmentInteraction(item: BeaconEntry?)
+        fun onListFragmentInteraction(item: BeaconManaged?)
     }
 
     companion object {

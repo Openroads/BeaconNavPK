@@ -4,6 +4,7 @@ import io.reactivex.Observable
 import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.*
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.AdvertisedId
+import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
 
 class ProximityApiConnectorMock : ProximityApiConnector {
 
@@ -38,7 +39,7 @@ class ProximityApiConnectorMock : ProximityApiConnector {
     ): Observable<GetBeaconAttachmentListResponse> {
 //        Thread.sleep(500)
         val attachmentList: MutableList<AttachmentEntry> = mutableListOf()
-        for (i in 0..5) {
+        for (i in 0..2) {
             attachmentList.add(
                 AttachmentEntry(
                     "attachmentName$i", "namespace", "Proszę zaczekać. Blablabla.",
@@ -46,6 +47,13 @@ class ProximityApiConnectorMock : ProximityApiConnector {
                 )
             )
         }
+        attachmentList.add(
+            AttachmentEntry(
+                "attachmentName", "beacon-pk/$LOCATION_NAME", "Proszę zaczekać. Blablabla.",
+                LocalDateTime.now().toString()
+            )
+        )
+
 
         return Observable.just(GetBeaconAttachmentListResponse(attachmentList))
     }
