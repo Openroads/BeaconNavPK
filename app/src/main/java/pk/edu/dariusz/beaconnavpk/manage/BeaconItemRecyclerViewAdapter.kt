@@ -5,6 +5,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_manage_item.view.*
 import pk.edu.dariusz.beaconnavpk.R
@@ -12,11 +14,13 @@ import pk.edu.dariusz.beaconnavpk.manage.ManageFragment.OnListFragmentInteractio
 import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.AttachmentEntry
 
-class BeaconItemRecyclerViewAdapter(
-    private val mValues: MutableList<BeaconManaged>,
-    private val mListener: OnListFragmentInteractionListener?
-) : RecyclerView.Adapter<BaseViewHolder>() {
 
+class BeaconItemRecyclerViewAdapter(
+    private val managedBeaconList: MutableList<BeaconManaged>,
+    private val mListener: OnListFragmentInteractionListener?
+) : RecyclerView.Adapter<BaseViewHolder>(), Filterable {
+
+    private var managedBeaconListFiltered = managedBeaconList
     private val VIEW_TYPE_NORMAL = 0
     private val VIEW_TYPE_LOADING = 1
     private var isLoaderVisible = false
@@ -57,8 +61,11 @@ class BeaconItemRecyclerViewAdapter(
     }
 
     fun add(response: BeaconManaged) {
-        mValues.add(response)
-        notifyItemInserted(mValues.size - 1)
+        managedBeaconList.add(response)
+        if (!managedBeaconListFiltered.contains(response)) {
+            managedBeaconListFiltered.add(response)
+        }
+        notifyItemInserted(managedBeaconListFiltered.size - 1)
     }
 
     fun addAll(beaconItems: List<BeaconManaged>) {
@@ -68,16 +75,16 @@ class BeaconItemRecyclerViewAdapter(
     }
 
     private fun remove(postItems: BeaconManaged?) {
-        val position = mValues.indexOf(postItems)
+        val position = managedBeaconList.indexOf(postItems)
         if (position > -1) {
-            mValues.removeAt(position)
+            managedBeaconList.removeAt(position)
             notifyItemRemoved(position)
         }
     }
 
     fun addLoading() {
         isLoaderVisible = true
-        add(
+        managedBeaconListFiltered.add(
             BeaconManaged(
                 "dummyName", AttachmentEntry("d", "d", "", "d"),
                 null
@@ -87,10 +94,10 @@ class BeaconItemRecyclerViewAdapter(
 
     fun removeLoading() {
         isLoaderVisible = false
-        val position = mValues.size - 1
+        val position = managedBeaconListFiltered.size - 1
         val item = getItem(position)
         if (item != null) {
-            mValues.removeAt(position)
+            managedBeaconListFiltered.removeAt(position)
             notifyItemRemoved(position)
         }
     }
@@ -102,18 +109,18 @@ class BeaconItemRecyclerViewAdapter(
     }
 
     fun getItem(position: Int): BeaconManaged? {
-        return mValues[position]
+        return managedBeaconListFiltered[position]
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (isLoaderVisible && position == mValues.size - 1) {
+        return if (isLoaderVisible && position == managedBeaconListFiltered.size - 1) {
             VIEW_TYPE_LOADING
         } else {
             VIEW_TYPE_NORMAL
         }
     }
 
-    override fun getItemCount(): Int = mValues.size
+    override fun getItemCount(): Int = managedBeaconListFiltered.size
 
     inner class ViewHolder(private val mView: View) : BaseViewHolder(mView) {
 
@@ -128,7 +135,7 @@ class BeaconItemRecyclerViewAdapter(
 
         override fun onBind(position: Int) {
             super.onBind(position)
-            val item = mValues[position]
+            val item = managedBeaconListFiltered[position]
             mView.tag = item
             mIdView.text = item.locationNameAttachment.getDataDecoded()
             mContentView.text = item.messageAttachment?.getDataDecoded() ?: ""
@@ -137,5 +144,28 @@ class BeaconItemRecyclerViewAdapter(
 
     inner class FooterHolder(itemView: View) : BaseViewHolder(itemView) {
         override fun clear() {}
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                return FilterResults().apply {
+                    values = if (constraint.isNullOrEmpty() || isLoaderVisible) {
+                        managedBeaconList
+                    } else {
+                        managedBeaconList.filter { mBeacon ->
+                            mBeacon.locationNameAttachment.getDataDecoded().contains(constraint, ignoreCase = true)
+                        }.toMutableList()
+                    }
+                }
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                if (results != null) {
+                    managedBeaconListFiltered = results.values as MutableList<BeaconManaged>
+                    notifyDataSetChanged()
+                }
+            }
+        }
     }
 }

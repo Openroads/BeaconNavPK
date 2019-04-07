@@ -1,5 +1,6 @@
 package pk.edu.dariusz.beaconnavpk.manage
 
+import android.app.SearchManager
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,6 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.SearchView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -28,6 +30,7 @@ import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
 import pk.edu.dariusz.beaconnavpk.utils.MESSAGE_TYPE
 import pk.edu.dariusz.beaconnavpk.utils.getType
 import java.lang.ref.WeakReference
+
 
 /**
  * A fragment representing a list of Items.
@@ -88,7 +91,6 @@ class ManageFragment : Fragment(), IdentifiableElement {
                 }
                 adapter = beaconItemRecyclerViewAdapter
                 setHasFixedSize(true)
-
                 addOnScrollListener(
                     object : PaginationScrollListener(mLayoutManager) {
                         override val isLastPage: Boolean
@@ -109,8 +111,33 @@ class ManageFragment : Fragment(), IdentifiableElement {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?) {
-        menu?.findItem(R.id.action_settings)?.isVisible = false
         super.onPrepareOptionsMenu(menu)
+        menu?.findItem(R.id.action_settings)?.isVisible = false
+        val searchViewItem = menu?.findItem(R.id.app_bar_search)
+
+        searchViewItem?.let { searchVI ->
+            searchVI.isVisible = true
+            val searchView = searchVI.actionView as SearchView
+            //TODO probably unused (behaviour is the same without setting searchable info  on android 7.0)
+            val activity = requireActivity()
+            val searchManager = activity.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+            searchView.setSearchableInfo(
+                searchManager
+                    .getSearchableInfo(activity.componentName)
+            )
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    return onQueryTextChange(query)
+                }
+
+                override fun onQueryTextChange(query: String): Boolean {
+                    if (!isLoading) {
+                        beaconItemRecyclerViewAdapter.filter.filter(query)
+                    }
+                    return false
+                }
+            })
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -187,6 +214,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
                         isLoading = false
                     },
                     {
+                        isLoading = false
                         if (currentPage == PAGE_START) {
                             beaconItemRecyclerViewAdapter.removeLoading()
                         }
