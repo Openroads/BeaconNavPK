@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.app_bar_navigation_drawer.*
 import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.about.AboutFragment
 import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
+import pk.edu.dariusz.beaconnavpk.manage.EditingFragment
 import pk.edu.dariusz.beaconnavpk.manage.ManageFragment
 import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.navigation.NavigateFragment
@@ -35,8 +36,15 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onListFragmentInteraction(item: BeaconManaged?) {
-        println("Item: $item")
+    override fun onListFragmentInteraction(selectedItem: BeaconManaged?) {
+        println("Item: $selectedItem")
+        if (selectedItem != null) {
+            val editingFragment = EditingFragment.newInstance(selectedItem)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.content_frame, editingFragment)
+                .addToBackStack("dupa")
+                .commit()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

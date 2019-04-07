@@ -132,13 +132,23 @@ class BeaconItemRecyclerViewAdapter(
         }
 
         override fun clear() {}
-
+        val MAKS_LENGTH = 300
         override fun onBind(position: Int) {
             super.onBind(position)
             val item = managedBeaconListFiltered[position]
             mView.tag = item
             mIdView.text = item.locationNameAttachment.getDataDecoded()
-            mContentView.text = item.messageAttachment?.getDataDecoded() ?: ""
+
+            val messageAttachment = item.messageAttachment
+            if (messageAttachment != null) {
+                val dataDecoded = messageAttachment.getDataDecoded()
+                val content = if (dataDecoded.length > MAKS_LENGTH) {
+                    dataDecoded.substring(0, 300) + "...."
+                } else {
+                    dataDecoded
+                }
+                mContentView.text = content
+            }
         }
     }
 

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import pk.edu.dariusz.beaconnavpk.R
@@ -56,11 +55,6 @@ class AboutFragment : Fragment(), IdentifiableElement {
     ): View? {
         // Inflate the layout for this currentFragment
         return inflater.inflate(R.layout.fragment_about, container, false)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu?) {
-        menu?.findItem(R.id.action_settings)?.isVisible = false
-        super.onPrepareOptionsMenu(menu)
     }
 
     // TODO: Rename method, update argument and hook method into UI event

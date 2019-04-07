@@ -17,6 +17,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -72,7 +73,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         // BeaconManager.setDebug(true)
         BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
         RunningAverageRssiFilter.setSampleExpirationMilliseconds(8000L)
-
+        setHasOptionsMenu(true)
         beaconManager.beaconParsers.add(
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
@@ -91,6 +92,10 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         return inflater.inflate(R.layout.fragment_navigate, container, false)
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?) {
+        menu?.findItem(R.id.action_settings)?.isVisible = true
+        super.onPrepareOptionsMenu(menu)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

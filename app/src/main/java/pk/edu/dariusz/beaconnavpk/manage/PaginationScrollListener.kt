@@ -7,7 +7,7 @@ abstract class PaginationScrollListener(private val layoutManager: LinearLayoutM
     RecyclerView.OnScrollListener() {
 
     companion object {
-        val PAGE_SIZE = 1
+        val PAGE_SIZE = 10
     }
 
     override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {

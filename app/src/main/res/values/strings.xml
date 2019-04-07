@@ -18,4 +18,6 @@
         made it.
     </string>
     <string name="empty_account_welcome_activity">Select google account to use</string>
+
+    <string name="hint_message_content">Type message associated with location…</string>
 </resources>

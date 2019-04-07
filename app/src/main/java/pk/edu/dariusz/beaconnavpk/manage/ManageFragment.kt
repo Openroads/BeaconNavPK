@@ -49,7 +49,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
     private var isLoading = false
     private var nextPageToken: String = ""
     private var totalCount: Int = 1
-
+    private val managedBeaconList = mutableListOf<BeaconManaged>()
     private val proximityApiConnector by lazy {
         ProximityApiConnector.create()
     }
@@ -78,7 +78,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_manage_list, container, false)
 
-        beaconItemRecyclerViewAdapter = BeaconItemRecyclerViewAdapter(mutableListOf(), listener)
+        beaconItemRecyclerViewAdapter = BeaconItemRecyclerViewAdapter(managedBeaconList, listener)
         // Set the adapter
         if (view is RecyclerView) {
             with(view) {
@@ -112,7 +112,6 @@ class ManageFragment : Fragment(), IdentifiableElement {
 
     override fun onPrepareOptionsMenu(menu: Menu?) {
         super.onPrepareOptionsMenu(menu)
-        menu?.findItem(R.id.action_settings)?.isVisible = false
         val searchViewItem = menu?.findItem(R.id.app_bar_search)
 
         searchViewItem?.let { searchVI ->
@@ -144,9 +143,11 @@ class ManageFragment : Fragment(), IdentifiableElement {
         super.onActivityCreated(savedInstanceState)
         val appCompatActivity = activity as AppCompatActivity
         appCompatActivity.supportActionBar?.title = "Configuration"
-        beaconItemRecyclerViewAdapter.addLoading()
-        isLoading = true
-        fetchBeacons(null)
+        if (managedBeaconList.isNullOrEmpty()) {
+            beaconItemRecyclerViewAdapter.addLoading()
+            isLoading = true
+            fetchBeacons(null)
+        }
     }
 
     private fun fetchBeacons(pageToken: String?) {
@@ -240,7 +241,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
     }
 
     interface OnListFragmentInteractionListener {
-        fun onListFragmentInteraction(item: BeaconManaged?)
+        fun onListFragmentInteraction(selectedItem: BeaconManaged?)
     }
 
     companion object {
