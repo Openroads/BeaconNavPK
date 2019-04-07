@@ -24,6 +24,7 @@
         <menu>
             <item
                     android:id="@+id/nav_manage"
+                    android:checkable="true"
                     android:icon="@drawable/ic_menu_manage"
                     android:title="Configure"/>
         </menu>

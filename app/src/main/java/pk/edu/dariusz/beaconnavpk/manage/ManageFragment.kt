@@ -3,11 +3,13 @@ package pk.edu.dariusz.beaconnavpk.manage
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -55,7 +57,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        setHasOptionsMenu(true)
         arguments?.let {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
@@ -106,8 +108,15 @@ class ManageFragment : Fragment(), IdentifiableElement {
         return view
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?) {
+        menu?.findItem(R.id.action_settings)?.isVisible = false
+        super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        val appCompatActivity = activity as AppCompatActivity
+        appCompatActivity.supportActionBar?.title = "Configuration"
         beaconItemRecyclerViewAdapter.addLoading()
         isLoading = true
         fetchBeacons(null)
