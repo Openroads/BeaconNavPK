@@ -42,14 +42,14 @@ class ProximityApiConnectorMock : ProximityApiConnector {
         for (i in 0..2) {
             attachmentList.add(
                 AttachmentEntry(
-                    "attachmentName$i", "namespace", "Proszę zaczekać. Blablabla.",
+                    "attachmentName$i", "namespace", "",
                     LocalDateTime.now().toString()
                 )
             )
         }
         attachmentList.add(
             AttachmentEntry(
-                "attachmentName", "beacon-pk/$LOCATION_NAME", "Proszę zaczekać. Blablabla.",
+                "attachmentName", "beacon-pk/$LOCATION_NAME", "TGFib3JhdG9yaXVtIDE1MDAxMDkwMCBhc2Rh",
                 LocalDateTime.now().toString()
             )
         )

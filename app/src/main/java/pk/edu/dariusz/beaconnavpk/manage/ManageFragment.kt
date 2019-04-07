@@ -108,6 +108,8 @@ class ManageFragment : Fragment(), IdentifiableElement {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        beaconItemRecyclerViewAdapter.addLoading()
+        isLoading = true
         fetchBeacons(null)
     }
 
@@ -164,6 +166,9 @@ class ManageFragment : Fragment(), IdentifiableElement {
                 .toList()
                 .subscribe(
                     { beaconManagedList ->
+                        if (currentPage == PAGE_START) {
+                            beaconItemRecyclerViewAdapter.removeLoading()
+                        }
                         beaconItemRecyclerViewAdapter.addAll(beaconManagedList)
                         if (beaconItemRecyclerViewAdapter.itemCount < totalCount) {
                             beaconItemRecyclerViewAdapter.addLoading()
@@ -173,6 +178,9 @@ class ManageFragment : Fragment(), IdentifiableElement {
                         isLoading = false
                     },
                     {
+                        if (currentPage == PAGE_START) {
+                            beaconItemRecyclerViewAdapter.removeLoading()
+                        }
                         Log.e(TAG, "Error while fetching beacons..", it)
                     }
                 )

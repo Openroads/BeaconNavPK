@@ -79,7 +79,7 @@ class BeaconItemRecyclerViewAdapter(
         isLoaderVisible = true
         add(
             BeaconManaged(
-                "dummyName", AttachmentEntry("d", "d", "d", "d"),
+                "dummyName", AttachmentEntry("d", "d", "", "d"),
                 null
             )
         )
