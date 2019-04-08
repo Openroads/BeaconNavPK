@@ -1,7 +1,9 @@
 package pk.edu.dariusz.beaconnavpk.manage
 
+import android.app.Activity
 import android.app.SearchManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
@@ -19,6 +21,7 @@ import io.reactivex.schedulers.Schedulers
 import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
 import pk.edu.dariusz.beaconnavpk.common.PrepareTokenAndCallTask
+import pk.edu.dariusz.beaconnavpk.manage.EditingFragment.Companion.UPDATED_BEACON_MANAGED
 import pk.edu.dariusz.beaconnavpk.manage.PaginationScrollListener.Companion.PAGE_SIZE
 import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector
@@ -33,30 +36,28 @@ import java.lang.ref.WeakReference
 
 
 /**
- * A fragment representing a list of Items.
+ * A fragment representing a list of localizations.
  * Activities containing this fragment MUST implement the
  * [ManageFragment.OnListFragmentInteractionListener] interface.
  */
 class ManageFragment : Fragment(), IdentifiableElement {
-    private lateinit var mLayoutManager: LinearLayoutManager
 
     private val TAG = "ManageFragment"
 
+    private lateinit var mLayoutManager: LinearLayoutManager
     private val PAGE_START = 1
-
     private var currentPage = PAGE_START
     private var isLastPage = false
     private var isLoading = false
     private var nextPageToken: String = ""
     private var totalCount: Int = 1
     private val managedBeaconList = mutableListOf<BeaconManaged>()
+    private var columnCount = 1
+    private var listener: OnListFragmentInteractionListener? = null
+    private lateinit var beaconItemRecyclerViewAdapter: BeaconItemRecyclerViewAdapter
     private val proximityApiConnector by lazy {
         ProximityApiConnector.create()
     }
-
-    private var columnCount = 1
-
-    private var listener: OnListFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,12 +66,6 @@ class ManageFragment : Fragment(), IdentifiableElement {
             columnCount = it.getInt(ARG_COLUMN_COUNT)
         }
     }
-
-    override fun getIdentifier(): String {
-        return TAG
-    }
-
-    private lateinit var beaconItemRecyclerViewAdapter: BeaconItemRecyclerViewAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -112,18 +107,20 @@ class ManageFragment : Fragment(), IdentifiableElement {
 
     override fun onPrepareOptionsMenu(menu: Menu?) {
         super.onPrepareOptionsMenu(menu)
+
         val searchViewItem = menu?.findItem(R.id.app_bar_search)
 
         searchViewItem?.let { searchVI ->
             searchVI.isVisible = true
             val searchView = searchVI.actionView as SearchView
-            //TODO probably unused (behaviour is the same without setting searchable info  on android 7.0)
             val activity = requireActivity()
             val searchManager = activity.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+
             searchView.setSearchableInfo(
                 searchManager
                     .getSearchableInfo(activity.componentName)
             )
+
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String): Boolean {
                     return onQueryTextChange(query)
@@ -225,6 +222,19 @@ class ManageFragment : Fragment(), IdentifiableElement {
         }.execute(PROXIMITY_BEACON_SCOPE_STRING)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK && requestCode == EDIT_MANAGED_BEACON_RC) {
+            // if fragment hasn't been recreated again this is not needed because passing objects to fragment
+            // don't need marshall object to byte[] and reference to object is send (no IPC process) read more:
+            // https://medium.com/@hamidgh/sending-objects-to-fragment-naive-question-is-it-sent-by-value-ddaaa19fa42d)
+            // modification in EditingFragment affect directly for object on displayed list
+            val beaconToRefresh = data?.getParcelableExtra<BeaconManaged>(UPDATED_BEACON_MANAGED)
+            if (beaconToRefresh != null) {
+                managedBeaconList.removeAll { b -> b.beaconName == beaconToRefresh.beaconName }
+                managedBeaconList.add(beaconToRefresh)
+            }
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -240,6 +250,11 @@ class ManageFragment : Fragment(), IdentifiableElement {
         listener = null
     }
 
+
+    override fun getIdentifier(): String {
+        return TAG
+    }
+
     interface OnListFragmentInteractionListener {
         fun onListFragmentInteraction(selectedItem: BeaconManaged?)
     }
@@ -247,6 +262,8 @@ class ManageFragment : Fragment(), IdentifiableElement {
     companion object {
 
         const val ARG_COLUMN_COUNT = "column-count"
+
+        const val EDIT_MANAGED_BEACON_RC = 112
 
         @JvmStatic
         fun newInstance(columnCount: Int) =

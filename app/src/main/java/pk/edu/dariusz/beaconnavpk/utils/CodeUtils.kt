@@ -8,9 +8,9 @@ fun base64DecodeToByteArray(s: String): ByteArray {
 }
 
 fun base64Decode(s: String): String {
-    return String(Base64.decode(s, Base64.DEFAULT))
+    return String(Base64.decode(s, Base64.NO_WRAP))
 }
 
 fun base64Encode(b: ByteArray): String {
-    return Base64.encodeToString(b, Base64.DEFAULT).trim()
+    return Base64.encodeToString(b, Base64.NO_WRAP).trim()
 }

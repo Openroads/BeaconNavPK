@@ -5,8 +5,31 @@ import org.threeten.bp.LocalDateTime
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.*
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.AdvertisedId
 import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
+import retrofit2.Response
 
 class ProximityApiConnectorMock : ProximityApiConnector {
+
+    override fun deleteAttachments(
+        authHeader: String,
+        beaconName: String,
+        namespacedType: String?
+    ): Observable<BatchDeleteResponse> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+
+    override fun deleteAttachment(authHeader: String, attachmentName: String): Observable<Response<Void>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+
+    override fun createAttachment(
+        authHeader: String,
+        beaconName: String,
+        attachmentEntry: AttachmentEntry
+    ): Observable<AttachmentEntry> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     override fun getBeaconInfo(request: GetObservedRequest): Observable<GetObservedResponse> {
         return Observable.just(GetObservedResponse(emptyList()))
@@ -53,8 +76,6 @@ class ProximityApiConnectorMock : ProximityApiConnector {
                 LocalDateTime.now().toString()
             )
         )
-
-
         return Observable.just(GetBeaconAttachmentListResponse(attachmentList))
     }
 

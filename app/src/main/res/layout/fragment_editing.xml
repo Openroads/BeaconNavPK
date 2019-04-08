@@ -8,13 +8,14 @@
 
     <TextView
             android:id="@+id/editedBeaconName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            tools:text="Beacon name" android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="8dp" android:layout_marginTop="24dp"
+            tools:text="Beacon name"
+            android:layout_marginTop="8dp"
             app:layout_constraintTop_toTopOf="parent" android:textSize="24sp" android:textAllCaps="true"
-            android:textStyle="bold"/>
+            android:textStyle="bold" app:layout_constraintStart_toEndOf="@+id/revertButton"
+            android:layout_marginStart="2dp" app:layout_constraintEnd_toStartOf="@+id/clearButton"
+            android:layout_marginEnd="2dp" android:textAlignment="center"/>
     <EditText
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -36,8 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/cancelButton"
-            app:layout_constraintEnd_toStartOf="@+id/saveButton"
-            android:layout_marginEnd="8dp" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="32dp" app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -48,7 +48,38 @@
             android:id="@+id/saveButton"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
-            app:layout_constraintStart_toEndOf="@+id/cancelButton"
-            android:layout_marginStart="8dp"
             android:layout_marginBottom="32dp" app:layout_constraintBottom_toBottomOf="parent"/>
+    <ProgressBar
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBarEditing"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.486"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" android:visibility="gone"/>
+    <ImageButton
+            android:src="@android:drawable/ic_menu_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/deleteButton"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="28dp" app:layout_constraintEnd_toStartOf="@+id/saveButton"
+            android:layout_marginEnd="8dp" app:layout_constraintStart_toEndOf="@+id/cancelButton"
+            android:layout_marginStart="8dp"/>
+    <ImageButton
+            android:src="@android:drawable/ic_menu_revert"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/revertButton" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/editedBeaconMessageContent" android:layout_marginStart="2dp"
+            android:layout_marginBottom="2dp"/>
+    <ImageButton
+            android:src="@android:drawable/ic_input_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/clearButton" android:layout_marginBottom="2dp"
+            app:layout_constraintBottom_toTopOf="@+id/editedBeaconMessageContent"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="2dp"/>
 </android.support.constraint.ConstraintLayout>

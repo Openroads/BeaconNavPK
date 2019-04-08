@@ -40,9 +40,10 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
         println("Item: $selectedItem")
         if (selectedItem != null) {
             val editingFragment = EditingFragment.newInstance(selectedItem)
+            editingFragment.setTargetFragment(currentFragment as Fragment, 112)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.content_frame, editingFragment)
-                .addToBackStack("dupa")
+                .addToBackStack(null)
                 .commit()
         }
     }

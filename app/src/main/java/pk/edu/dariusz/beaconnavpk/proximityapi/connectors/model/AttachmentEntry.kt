@@ -9,7 +9,7 @@ data class AttachmentEntry(
     val attachmentName: String,
     val namespacedType: String,
     val data: String,
-    val creationTimeMS: String
+    val creationTimeMs: String
 ) : Parcelable {
 
     fun getDataDecoded(): String {

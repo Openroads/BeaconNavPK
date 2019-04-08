@@ -3,10 +3,8 @@ package pk.edu.dariusz.beaconnavpk.proximityapi.connectors
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetBeaconAttachmentListResponse
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetBeaconListResponse
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedRequest
-import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedResponse
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.*
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -34,6 +32,26 @@ interface ProximityApiConnector {
         @Header("Authorization") authHeader: String,
         @Path("beaconName", encoded = true) beaconName: String
     ): Observable<GetBeaconAttachmentListResponse>
+
+    @POST("{beaconName}/attachments")
+    fun createAttachment(
+        @Header("Authorization") authHeader: String,
+        @Path("beaconName", encoded = true) beaconName: String,
+        @Body attachmentEntry: AttachmentEntry
+    ): Observable<AttachmentEntry>
+
+    @DELETE("{attachmentName}")
+    fun deleteAttachment(
+        @Header("Authorization") authHeader: String,
+        @Path("attachmentName", encoded = true) attachmentName: String
+    ): Observable<Response<Void>>
+
+    @POST("{beaconName}/attachments:batchDelete")
+    fun deleteAttachments(
+        @Header("Authorization") authHeader: String,
+        @Path("beaconName", encoded = true) beaconName: String,
+        @Query("namespacedType", encoded = true) namespacedType: String? = null
+    ): Observable<BatchDeleteResponse>
 
     /*********************************************************************************************
      * CONFIGURATION
