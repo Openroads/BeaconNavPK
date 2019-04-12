@@ -30,8 +30,7 @@ class BeaconItemRecyclerViewAdapter(
     init {
         mOnClickListener = View.OnClickListener { v ->
             val item = v.tag as BeaconManaged
-
-            mListener?.onListFragmentInteraction(item)
+            mListener?.onBeaconManageListFragmentInteraction(item)
         }
     }
 

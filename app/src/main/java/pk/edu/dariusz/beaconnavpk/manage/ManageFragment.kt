@@ -256,7 +256,7 @@ class ManageFragment : Fragment(), IdentifiableElement {
     }
 
     interface OnListFragmentInteractionListener {
-        fun onListFragmentInteraction(selectedItem: BeaconManaged?)
+        fun onBeaconManageListFragmentInteraction(selectedItem: BeaconManaged?)
     }
 
     companion object {

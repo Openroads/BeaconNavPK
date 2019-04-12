@@ -1,7 +1,5 @@
 package pk.edu.dariusz.beaconnavpk.about
 
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
@@ -38,7 +36,7 @@ class AboutFragment : Fragment(), IdentifiableElement {
     private var param1: String? = null
     private var param2: String? = null
     //TODO: Ready to use reference of context called fragment with interface implementation
-    private var listener: OnFragmentInteractionListener? = null
+    // private var listener: OnFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,18 +56,18 @@ class AboutFragment : Fragment(), IdentifiableElement {
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
+    /*fun onButtonPressed(uri: Uri) {
         listener?.onFragmentInteraction(uri)
-    }
+    }*/
 
-    override fun onAttach(context: Context) {
+    /*override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnFragmentInteractionListener) {
             listener = context
         } else {
             throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
         }
-    }
+    }*/
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         val appCompatActivity = activity as AppCompatActivity
@@ -77,10 +75,10 @@ class AboutFragment : Fragment(), IdentifiableElement {
         super.onActivityCreated(savedInstanceState)
     }
 
-    override fun onDetach() {
+    /*override fun onDetach() {
         super.onDetach()
         listener = null
-    }
+    }*/
 
     /**
      * This interface must be implemented by activities that contain this
@@ -93,10 +91,10 @@ class AboutFragment : Fragment(), IdentifiableElement {
      * (http://developer.android.com/training/basics/fragments/communicating.html)
      * for more information.
      */
-    interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onFragmentInteraction(uri: Uri)
-    }
+    /* interface OnFragmentInteractionListener {
+         // TODO: Update argument type and name
+         fun onFragmentInteraction(uri: Uri)
+     }*/
 
     companion object {
         /**

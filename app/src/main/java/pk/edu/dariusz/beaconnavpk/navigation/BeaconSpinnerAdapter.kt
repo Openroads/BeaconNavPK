@@ -10,8 +10,7 @@ import pk.edu.dariusz.beaconnavpk.proximityapi.model.BeaconInfo
 class BeaconSpinnerAdapter(
     private val navigateFragment: NavigateFragment, @LayoutRes resource: Int,
     private val objects: MutableList<BeaconInfo>
-) :
-    ArrayAdapter<BeaconInfo>(navigateFragment.activity, resource, objects) {
+) : ArrayAdapter<BeaconInfo>(navigateFragment.activity, resource, objects) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val labelText = super.getView(position, convertView, parent) as TextView
@@ -27,6 +26,10 @@ class BeaconSpinnerAdapter(
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup?): View {
         return getView(position, convertView, parent)
+    }
+
+    override fun getItem(position: Int): BeaconInfo? {
+        return if (objects.isNullOrEmpty()) null else objects[position]
     }
 
     override fun notifyDataSetChanged() {

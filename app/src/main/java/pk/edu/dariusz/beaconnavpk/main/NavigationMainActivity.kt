@@ -1,7 +1,6 @@
 package pk.edu.dariusz.beaconnavpk.main
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.Fragment
@@ -9,6 +8,7 @@ import android.support.v4.app.FragmentTransaction
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -27,16 +27,12 @@ import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.navigation.NavigateFragment
 
 class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
-    AboutFragment.OnFragmentInteractionListener, ManageFragment.OnListFragmentInteractionListener {
+    ManageFragment.OnListFragmentInteractionListener {
 
     //private lateinit var accountSharedPref: SharedPreferences
     private var googleSignInAccount: GoogleSignInAccount? = null
 
-    override fun onFragmentInteraction(uri: Uri) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onListFragmentInteraction(selectedItem: BeaconManaged?) {
+    override fun onBeaconManageListFragmentInteraction(selectedItem: BeaconManaged?) {
         println("Item: $selectedItem")
         if (selectedItem != null) {
             val editingFragment = EditingFragment.newInstance(selectedItem)
@@ -118,11 +114,11 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
 
         //replacing the currentFragment
         if (newFragment != null) {
-
             if (currentFragment == null || currentFragment!!.getIdentifier() != newFragment.getIdentifier()) {
+                Log.i(TAG, "Navigation to " + newFragment.getIdentifier())
                 val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
                 ft.replace(R.id.content_frame, newFragment as Fragment)
-                ft.commit()
+                    .commit()
                 currentFragment = newFragment
             }
         }
@@ -138,32 +134,9 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.navigation_drawer, menu)
         return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            /*if activity has back button
-            android.R.id.home -> {
-                    finish()
-                    true
-                }*/
-            R.id.action_settings -> {
-                item.isChecked = !item.isChecked
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -172,5 +145,4 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
     }
 
     private val TAG = "NavigationActivity_TAG"
-
 }

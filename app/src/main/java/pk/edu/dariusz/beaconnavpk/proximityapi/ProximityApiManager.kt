@@ -8,7 +8,6 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import org.altbeacon.beacon.Beacon
 import org.threeten.bp.LocalDateTime
-import pk.edu.dariusz.beaconnavpk.navigation.BeaconSpinnerAdapter
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.GetObservedRequest
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.Observation
@@ -20,8 +19,8 @@ import java.util.*
 
 class ProximityApiManager(
     private val activity: Activity,
-    private val spinnerNearbyBeaconsAdapter: BeaconSpinnerAdapter,
-    private val proximityBeaconListToSync: MutableList<BeaconInfo>
+    private val proximityBeaconListToSync: MutableList<BeaconInfo>,
+    private val notifyDataSetChanged: () -> Unit
 ) {
     private var disposable: Disposable? = null
 
@@ -42,7 +41,7 @@ class ProximityApiManager(
             Log.i(TAG, "Taking beacon info from cache...")
             beaconFromCache.distance = beacon.distance
             addIfNotExist(beaconFromCache)
-            activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
+            activity.runOnUiThread { notifyDataSetChanged() }
         } else {
             if (isNetworkAvailable(activity)) {
                 getProximityInfoFromRESTAPI(beacon)
@@ -55,7 +54,7 @@ class ProximityApiManager(
     fun removeFromTrackedProximityBeacons(advertisedBeaconId: String) {
         if (proximityBeaconListToSync.isNotEmpty()) {
             proximityBeaconListToSync.remove(proximityBeaconListToSync.find { beacon -> beacon.advertisedId.id == advertisedBeaconId })
-            activity.runOnUiThread { spinnerNearbyBeaconsAdapter.notifyDataSetChanged() }
+            activity.runOnUiThread { notifyDataSetChanged() }
             if (proximityBeaconListToSync.isEmpty()) {
                 Log.i(TAG, "Tracked proximity beacons collection is empty")
                 // activity.clearAndDisableViews()
@@ -68,7 +67,7 @@ class ProximityApiManager(
         Log.i(TAG, "Updating beacon $advertisedBeaconId distance for:  ${closestBeacon.distance}")
         proximityBeaconListToSync.find { beaconInfo -> beaconInfo.advertisedId.id == advertisedBeaconId }
             ?.distance = closestBeacon.distance
-        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
+        notifyDataSetChanged()
     }
 
     fun dispose() {
@@ -106,11 +105,11 @@ class ProximityApiManager(
                         beaconProximityAPICache[advertisedBeaconId] = beaconInfo
 
                         addIfNotExist(beaconInfo)
-                        spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
+                        notifyDataSetChanged()
                     }
                 },
                 { error ->
-                    Log.e("error", error.message)
+                    Log.e(TAG, "Error while getting beacon observed" + error.message)
                     error.printStackTrace()
                     Toast.makeText(activity, error.message, Toast.LENGTH_SHORT).show()
                     throw error

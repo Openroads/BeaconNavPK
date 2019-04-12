@@ -16,10 +16,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.Toast
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -36,11 +33,8 @@ import pk.edu.dariusz.beaconnavpk.proximityapi.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
 class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
-    private val TAG = "NavigateFragment_TAG"
 
-    override fun getIdentifier(): String {
-        return TAG
-    }
+    private val TAG = "NavigateFragment_TAG"
 
     private var message: String? = null
 
@@ -65,6 +59,8 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
     private lateinit var connectToNetworkSnackInfo: Snackbar
 
+    var isAutomaticallySelection: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,12 +79,22 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                item.isChecked = !item.isChecked
+                isAutomaticallySelection = item.isChecked
+                compassButton.visibility = if (isAutomaticallySelection) View.GONE else View.VISIBLE
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this currentFragment
         return inflater.inflate(R.layout.fragment_navigate, container, false)
     }
 
@@ -96,6 +102,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         menu?.findItem(R.id.action_settings)?.isVisible = true
         super.onPrepareOptionsMenu(menu)
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -111,6 +118,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             nearby_beacons_spinner.adapter = adapter
             nearby_beacons_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                     selectedBeacon = parent.getItemAtPosition(position) as BeaconInfo
                     selectedBeacon?.let { updateViewForBeacon(it) }
@@ -123,9 +131,15 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         proximityApiManager =
             ProximityApiManager(
                 requireActivity(),
-                spinnerNearbyBeaconsAdapter,
                 trackedProximityBeacons
-            )
+            ) {
+                spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
+
+                val theClosestBeacon = spinnerNearbyBeaconsAdapter.getItem(0)
+                if (isAutomaticallySelection && theClosestBeacon != null && theClosestBeacon !== selectedBeacon) {
+                    nearby_beacons_spinner.setSelection(0, true)
+                }
+            }
 
         show_message_button.setOnClickListener {
             Log.i(TAG, "Show message button onClick")
@@ -286,6 +300,10 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         }
     }
 
+    override fun getIdentifier(): String {
+        return TAG
+    }
+
     /*******************************     BEACON LIBRARY IMPLEMENTATION   **********************************************/
     override fun onBeaconServiceConnect() {
 
@@ -316,53 +334,53 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
         beaconManager.removeAllRangeNotifiers()
         beaconManager.addRangeNotifier { beacons, _ ->
-            if (activity != null) {
-                if (beacons.isNotEmpty()) {
 
-                    beacons.forEach { b -> Log.i(TAG, "Scanned beacon: $b  with distance: " + b.distance) }
+            if (activity != null && beacons.isNotEmpty()) {
 
-                    if (isNetworkAvailable(requireActivity())) {
-                        val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
+                beacons.forEach { b -> Log.i(TAG, "Scanned beacon: $b  with distance: " + b.distance) }
 
-                        partition.second.forEach { farBeacon ->
-                            proximityApiManager.removeFromTrackedProximityBeacons(
-                                encodeBeaconId(farBeacon)
+                if (isNetworkAvailable(requireActivity())) {
+                    val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
+
+                    partition.second.forEach { farBeacon ->
+                        proximityApiManager.removeFromTrackedProximityBeacons(
+                            encodeBeaconId(farBeacon)
+                        )
+                    }
+                    trackedBeacons.keys.removeAll(partition.second)
+
+                    val closestBeacons = partition.first
+
+                    if (!closestBeacons.isNullOrEmpty()) {
+                        for (closestBeacon in closestBeacons) {
+                            Log.i(
+                                TAG,
+                                "Close beacon with distance less than $MIN_DISTANCE} is: $closestBeacon "
                             )
-                        }
-                        trackedBeacons.keys.removeAll(partition.second)
+                            if (!trackedBeacons.contains(closestBeacon) || isNotValidCache(trackedBeacons[closestBeacon]!!)) {
+                                Log.i(TAG, "That beacon is new tracked beacon..")
 
-                        val closestBeacons = partition.first
+                                try {
+                                    proximityApiManager.addToTrackedProximityBeacons(closestBeacon)
+                                    trackedBeacons[closestBeacon] = LocalDateTime.now()
 
-                        if (!closestBeacons.isNullOrEmpty()) {
-                            for (closestBeacon in closestBeacons) {
-                                Log.i(
-                                    TAG,
-                                    "Close beacon with distance less than $MIN_DISTANCE} is: $closestBeacon "
-                                )
-                                if (!trackedBeacons.contains(closestBeacon) || isNotValidCache(trackedBeacons[closestBeacon]!!)) {
-                                    Log.i(TAG, "That beacon is new tracked beacon..")
-
-                                    try {
-                                        proximityApiManager.addToTrackedProximityBeacons(closestBeacon)
-                                        trackedBeacons[closestBeacon] = LocalDateTime.now()
-
-                                    } catch (e: Exception) {
-                                        Log.e(
-                                            TAG,
-                                            "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
-                                        )
-                                    }
-
-                                } else {
-                                    Log.i(TAG, "Close beacon is already tracked..")
-                                    proximityApiManager.updateBeaconDistance(closestBeacon)
+                                } catch (e: Exception) {
+                                    Log.e(
+                                        TAG,
+                                        "Proximity API synchronization for the closest beacon failure: " + e.localizedMessage
+                                    )
                                 }
+
+                            } else {
+                                Log.i(TAG, "Close beacon is already tracked..")
+                                proximityApiManager.updateBeaconDistance(closestBeacon)
                             }
                         }
-                    } else {
-                        showMissingConnectionInfo()
                     }
+                } else {
+                    showMissingConnectionInfo()
                 }
+
             }
         }
 
