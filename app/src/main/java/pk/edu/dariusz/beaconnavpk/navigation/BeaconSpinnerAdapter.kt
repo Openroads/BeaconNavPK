@@ -14,18 +14,18 @@ class BeaconSpinnerAdapter(
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val labelText = super.getView(position, convertView, parent) as TextView
-
-        val s = objects[position].attachmentData.locationName +
-                " (${objects[position].distance.toString().substring(0, 4)}m)"
-
-        labelText.text = s
-
-        labelText.setPadding(0, labelText.paddingTop, labelText.paddingRight, labelText.paddingBottom)
+        labelText.text = ""
+        labelText.setPadding(0, 0, 0, 0)
         return labelText
     }
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        return getView(position, convertView, parent)
+        val view = super.getDropDownView(position, convertView, parent) as TextView
+        val text = objects[position].attachmentData.locationName +
+                " (${objects[position].distance.toString().substring(0, 4)}m)"
+        view.text = text
+
+        return view
     }
 
     override fun getItem(position: Int): BeaconInfo? {

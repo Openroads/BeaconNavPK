@@ -113,10 +113,10 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
         spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
-            R.layout.spinner_row,
+            android.R.layout.simple_spinner_item,
             trackedProximityBeacons
         ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            adapter.setDropDownViewResource(R.layout.spinner_row)
             nearby_beacons_spinner.adapter = adapter
             nearby_beacons_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
@@ -129,6 +129,10 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
             }
         }
 
+        nearestLocation.setOnClickListener {
+            nearby_beacons_spinner.performClick()
+        }
+
         proximityApiManager =
             ProximityApiManager(
                 requireActivity(),
@@ -137,9 +141,16 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                 spinnerNearbyBeaconsAdapter.notifyDataSetChanged()
 
                 val theClosestBeacon = spinnerNearbyBeaconsAdapter.getItem(0)
-                if (isAutomaticallySelection && theClosestBeacon != null && theClosestBeacon !== selectedBeacon) {
-                    nearby_beacons_spinner.setSelection(0, true)
+
+                if (theClosestBeacon != null) {
+                    val s = theClosestBeacon.attachmentData.locationName +
+                            " (${theClosestBeacon.distance.toString().substring(0, 4)}m)"
+                    nearestLocation.text = s
+                    if (isAutomaticallySelection && theClosestBeacon !== selectedBeacon) {
+                        nearby_beacons_spinner.setSelection(0, true)
+                    }
                 }
+
             }
 
         show_message_button.setOnClickListener {
