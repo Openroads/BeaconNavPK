@@ -16,6 +16,8 @@ const val MESSAGE_TYPE = "MESSAGE"
 
 const val LOCATION_NAME = "LOCATION_NAME"
 
+const val LOCATION_TYPE = "LOCATION_TYPE"
+
 const val POSITION_X = "X"
 
 const val POSITION_Y = "Y"

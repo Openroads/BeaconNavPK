@@ -129,10 +129,21 @@ class ProximityApiManager(
                     attachmentData.message = base64Decode(attachment.data)
                 }
                 LOCATION_NAME -> attachmentData.locationName = base64Decode(attachment.data)
+                LOCATION_TYPE -> {
+                    val locationTypeString = base64Decode(attachment.data)
+                    try {
+                        attachmentData.locationType = LocationType.valueOf(locationTypeString)
+                    } catch (ex: IllegalArgumentException) {
+                        Log.w(
+                            TAG,
+                            "Incorrect location type configured in attachments for location. Default value " + attachmentData.locationType +
+                                    " left for the location.."
+                        )
+                    }
+                }
                 POSITION_X -> x = convertToLocalizationCoordinate(base64Decode(attachment.data))
                 POSITION_Y -> y = convertToLocalizationCoordinate(base64Decode(attachment.data))
             }
-
         }
         if (x != null && y != null) {
             attachmentData.mapPosition = Position(x, y)

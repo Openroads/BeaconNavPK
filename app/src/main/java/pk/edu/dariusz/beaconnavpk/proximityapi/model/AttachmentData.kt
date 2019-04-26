@@ -3,4 +3,9 @@ package pk.edu.dariusz.beaconnavpk.proximityapi.model
 /**
  * Class to store data extracted from beacon attachment info list
  */
-data class AttachmentData(var locationName: String = "", var message: String? = null, var mapPosition: Position? = null)
+data class AttachmentData(
+    var locationName: String = "",
+    var locationType: LocationType = LocationType.ROOM,
+    var message: String? = null,
+    var mapPosition: Position? = null
+)

@@ -29,6 +29,7 @@ import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
 import pk.edu.dariusz.beaconnavpk.proximityapi.ProximityApiManager
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.AttachmentInfo
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.BeaconInfo
+import pk.edu.dariusz.beaconnavpk.proximityapi.model.LocationType
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
@@ -173,7 +174,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        (activity as AppCompatActivity).supportActionBar?.title = "Navigation"
+        (activity as AppCompatActivity).supportActionBar?.title = "Navigation - building G"
         super.onActivityCreated(savedInstanceState)
     }
 
@@ -192,23 +193,31 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
         val attachments = beaconInfo.attachments
 
-        clearAndDisableViews()
-
-        for (attachment: AttachmentInfo in attachments) {
-            if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
-                open_schedule_button.isEnabled = true
-                break
-            }
-        }
-
         val attachmentData = beaconInfo.attachmentData
+
+        val locationType = attachmentData.locationType
+
+        clearAndDisableViews(locationType)
 
         selectedLocationText.text = attachmentData.locationName
 
-        attachmentData.message?.let { msg ->
-            show_message_button.isEnabled = true
-            message = msg
+        if (locationType == LocationType.ROOM) {
+            attachmentData.message?.let { msg ->
+                show_message_button.isEnabled = true
+                message = msg
+            }
+            for (attachment: AttachmentInfo in attachments) {
+                if (attachment.namespacedType.contains(TimetableWeek.TIMETABLE.name)) {
+                    open_schedule_button.isEnabled = true
+                    break
+                }
+            }
+        } else if (locationType == LocationType.WELCOME) {
+            attachmentData.message?.let { msg ->
+                welcomeTextView.text = msg.replace("\\n", "\n")
+            }
         }
+
         mapImageView.setImageBitmap(map)
 
         attachmentData.mapPosition?.let { position ->
@@ -232,11 +241,19 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         mapImageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
     }
 
-    private fun clearAndDisableViews() {
-        open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
+    private fun clearAndDisableViews(locationType: LocationType) {
         message = null
         selectedLocationText.text = ""
         mapImageView.setImageBitmap(map)
+
+        if (locationType == LocationType.ROOM) {
+            open_schedule_button.visibility = View.VISIBLE; show_message_button.visibility = View.VISIBLE
+            open_schedule_button.isEnabled = false; show_message_button.isEnabled = false
+            welcomeTextView.visibility = View.GONE
+        } else if (locationType == LocationType.WELCOME) {
+            open_schedule_button.visibility = View.GONE; show_message_button.visibility = View.INVISIBLE
+            welcomeTextView.visibility = View.VISIBLE
+        }
     }
 
 
