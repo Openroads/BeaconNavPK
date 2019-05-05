@@ -20,4 +20,8 @@
     <string name="empty_account_welcome_activity">Select google account to use</string>
 
     <string name="hint_message_content">Type message associated with location…</string>
+    <string name="application_description">Application uses Beacon devices to navigate through building G, which is
+        placed on Cracow University Of Technology Czyżyny campus. Detected beacons are associated with locations, which
+        are presented on map along with possibility to display additional data about them like timetables or messages.
+    </string>
 </resources>

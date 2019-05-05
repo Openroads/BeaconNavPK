@@ -107,7 +107,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //        mapImageView.isZoomable = false
+        mapImageView.isZoomable = false
         selectedLocationMarker.color = resources.getColor(android.R.color.holo_red_dark, requireActivity().theme)
         theNearestLocationMarker.color = resources.getColor(android.R.color.holo_green_dark, requireActivity().theme)
 
@@ -145,7 +145,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                 if (theClosestBeacon != null) {
                     val s = theClosestBeacon.attachmentData.locationName +
                             " (${theClosestBeacon.distance.toString().substring(0, 4)}m)"
-                    nearestLocation.text = s
+                    nearestLocation?.text = s
                     if (isAutomaticallySelection && theClosestBeacon !== selectedBeacon) {
                         nearby_beacons_spinner.setSelection(0, true)
                     }
