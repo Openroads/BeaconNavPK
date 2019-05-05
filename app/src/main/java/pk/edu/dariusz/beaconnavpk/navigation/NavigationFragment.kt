@@ -245,8 +245,16 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
         tempCanvas.drawBitmap(map, 0F, 0F, null)
 
+        val theNearestLocationPoint = localizationPointsMap[theNearestLocationMarker]
+        val selectedLocationPoint = localizationPointsMap[selectedLocationMarker]
+
         localizationPointsMap.forEach { (marker, position) ->
-            tempCanvas.drawCircle(position.x, position.y, 10f, marker)
+            tempCanvas.drawCircle(position.x, position.y, 15f, marker)
+        }
+
+        if (selectedLocationPoint != null && theNearestLocationPoint == selectedLocationPoint) {
+            tempCanvas.drawCircle(selectedLocationPoint.x, selectedLocationPoint.y, 20f, theNearestLocationMarker)
+            tempCanvas.drawCircle(selectedLocationPoint.x, selectedLocationPoint.y, 10f, selectedLocationMarker)
         }
 
         mapImageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
