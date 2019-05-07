@@ -51,6 +51,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
     private val selectedLocationMarker = Paint(Paint.ANTI_ALIAS_FLAG)
     val theNearestLocationMarker = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val theNearestLocationArea = Paint(Paint.ANTI_ALIAS_FLAG)
 
     val localizationPointsMap = mutableMapOf<Paint, Position>()
 
@@ -110,7 +111,16 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         mapImageView.isZoomable = false
         selectedLocationMarker.color = resources.getColor(android.R.color.holo_red_dark, requireActivity().theme)
         theNearestLocationMarker.color = resources.getColor(android.R.color.holo_green_dark, requireActivity().theme)
-
+        theNearestLocationArea.color = resources.getColor(android.R.color.holo_green_dark, requireActivity().theme)
+        theNearestLocationArea.alpha = 50
+        /*//TODO to animate
+        val anim = AlphaAnimation(0.5f, 8.0f)
+         anim.duration = 300
+         anim.startOffset = 20
+         anim.repeatMode = Animation.REVERSE
+         anim.repeatCount = Animation.INFINITE
+         imageView.alpha = 0.3f
+         imageView.startAnimation(anim)*/
         spinnerNearbyBeaconsAdapter = BeaconSpinnerAdapter(
             this,
             android.R.layout.simple_spinner_item,
@@ -250,6 +260,10 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
         localizationPointsMap.forEach { (marker, position) ->
             tempCanvas.drawCircle(position.x, position.y, 15f, marker)
+            tempCanvas.drawCircle(position.x, position.y, 15f, marker)
+        }
+        if (theNearestLocationPoint != null) {
+            tempCanvas.drawCircle(theNearestLocationPoint.x, theNearestLocationPoint.y, 80f, theNearestLocationArea)
         }
 
         if (selectedLocationPoint != null && theNearestLocationPoint == selectedLocationPoint) {
