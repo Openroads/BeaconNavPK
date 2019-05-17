@@ -27,7 +27,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:contentDescription="Here should appear image with map."
-            app:srcCompat="@drawable/mieszkanie_plan"
+            app:srcCompat="@drawable/bldg_g_plan"
             app:layout_constraintHorizontal_bias="0.497"
             android:layout_marginEnd="4dp" android:layout_marginStart="4dp"
             android:layout_marginBottom="35dp" app:layout_constraintBottom_toBottomOf="parent"/>

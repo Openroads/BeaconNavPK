@@ -67,18 +67,20 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         super.onCreate(savedInstanceState)
 
         AndroidThreeTen.init(requireContext())
+        setHasOptionsMenu(true)
+
         beaconManager = BeaconManager.getInstanceForApplication(requireContext())
         // BeaconManager.setDebug(true)
         BeaconManager.setRssiFilterImplClass(RunningAverageRssiFilter::class.java)
         RunningAverageRssiFilter.setSampleExpirationMilliseconds(8000L)
-        setHasOptionsMenu(true)
+
         beaconManager.beaconParsers.add(
             BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT)
         )
 
         beaconManager.bind(this)
 
-        map = BitmapFactory.decodeResource(resources, R.drawable.mieszkanie_plan)
+        map = BitmapFactory.decodeResource(resources, R.drawable.bldg_g_plan)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -357,27 +359,29 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
     /*******************************     BEACON LIBRARY IMPLEMENTATION   **********************************************/
     override fun onBeaconServiceConnect() {
 
+        val region = Region("beaconScanRegionId", null, null, null)
+
         beaconManager.removeAllMonitorNotifiers()
 
         beaconManager.addMonitorNotifier(object : MonitorNotifier {
             override fun didEnterRegion(region: Region) {
-                Log.i(TAG, "I just saw an beacon for the first time! - didEnterRegion")
+                Log.i(TAG, "Entered into monitored region - at least one beacon is visible")
             }
 
             override fun didExitRegion(region: Region) {
-                Log.i(TAG, "I no longer see an beacon - didExitRegion")
+                Log.i(TAG, "Exit from monitored region  - none beacon is visible")
             }
 
             override fun didDetermineStateForRegion(state: Int, region: Region) {
                 Log.i(
                     TAG,
-                    "I have just switched from seeing/not seeing beacons: $state - didDetermineStateForRegion"
+                    "Switched from enter/exit state: $state - state"
                 )
             }
         })
 
         try {
-            beaconManager.startMonitoringBeaconsInRegion(Region("myMonitoringUniqueId", null, null, null))
+            beaconManager.startMonitoringBeaconsInRegion(region)
         } catch (e: RemoteException) {
             e.printStackTrace()
         }
@@ -393,26 +397,25 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                     val partition = beacons.partition { beacon -> beacon.distance <= MIN_DISTANCE }
 
                     partition.second.forEach { farBeacon ->
-                        proximityApiManager.removeFromTrackedProximityBeacons(
-                            encodeBeaconId(farBeacon)
-                        )
+                        proximityApiManager.removeFromTrackedProximityBeacons(encodeBeaconId(farBeacon))
                     }
+
                     trackedBeacons.keys.removeAll(partition.second)
 
-                    val closestBeacons = partition.first
+                    val closeBeacons = partition.first
 
-                    if (!closestBeacons.isNullOrEmpty()) {
-                        for (closestBeacon in closestBeacons) {
+                    if (!closeBeacons.isNullOrEmpty()) {
+                        for (closeBeacon in closeBeacons) {
                             Log.i(
                                 TAG,
-                                "Close beacon with distance less than $MIN_DISTANCE} is: $closestBeacon "
+                                "Close beacon with distance less than $MIN_DISTANCE} is: $closeBeacon "
                             )
-                            if (!trackedBeacons.contains(closestBeacon) || isNotValidCache(trackedBeacons[closestBeacon]!!)) {
+                            if (!trackedBeacons.contains(closeBeacon) || isNotValidTracking(trackedBeacons[closeBeacon]!!)) {
                                 Log.i(TAG, "That beacon is new tracked beacon..")
 
                                 try {
-                                    proximityApiManager.addToTrackedProximityBeacons(closestBeacon)
-                                    trackedBeacons[closestBeacon] = LocalDateTime.now()
+                                    proximityApiManager.addToTrackedProximityBeacons(closeBeacon)
+                                    trackedBeacons[closeBeacon] = LocalDateTime.now()
 
                                 } catch (e: Exception) {
                                     Log.e(
@@ -423,7 +426,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
                             } else {
                                 Log.i(TAG, "Close beacon is already tracked..")
-                                proximityApiManager.updateBeaconDistance(closestBeacon)
+                                proximityApiManager.updateBeaconDistance(closeBeacon)
                             }
                         }
                     }
@@ -435,7 +438,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         }
 
         try {
-            beaconManager.startRangingBeaconsInRegion(Region("myRangingUniqueId", null, null, null))
+            beaconManager.startRangingBeaconsInRegion(region)
         } catch (e: RemoteException) {
             e.printStackTrace()
         }
@@ -460,7 +463,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
     companion object {
 
         const val SCHEDULE_URL = "http://aslan.mech.pk.edu.pl/"
-        const val MIN_DISTANCE = 4.5
+        const val MIN_DISTANCE = 5.5
 
         @JvmStatic
         fun newInstance() = NavigateFragment()

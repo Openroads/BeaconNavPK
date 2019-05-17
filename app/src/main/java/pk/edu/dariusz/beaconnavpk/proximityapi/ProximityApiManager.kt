@@ -67,7 +67,7 @@ class ProximityApiManager(
         Log.i(TAG, "Updating beacon $advertisedBeaconId distance for:  ${closestBeacon.distance}")
         proximityBeaconListToSync.find { beaconInfo -> beaconInfo.advertisedId.id == advertisedBeaconId }
             ?.distance = closestBeacon.distance
-        notifyDataSetChanged()
+        activity.runOnUiThread { notifyDataSetChanged() }
     }
 
     fun dispose() {
@@ -111,7 +111,7 @@ class ProximityApiManager(
                 { error ->
                     Log.e(TAG, "Error while getting beacon observed" + error.message)
                     error.printStackTrace()
-                    Toast.makeText(activity, error.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, "Error during fetching data for location.", Toast.LENGTH_SHORT).show()
                     throw error
                 })
     }

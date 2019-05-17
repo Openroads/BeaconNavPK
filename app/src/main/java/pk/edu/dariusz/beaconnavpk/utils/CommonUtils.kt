@@ -20,7 +20,7 @@ fun isValidCache(syncTime: LocalDateTime): Boolean {
     return beaconInCacheInMinutes < CACHE_VALID_TIME_IN_MINUTES
 }
 
-fun isNotValidCache(syncTime: LocalDateTime): Boolean {
+fun isNotValidTracking(syncTime: LocalDateTime): Boolean {
     return !isValidCache(syncTime)
 }
 

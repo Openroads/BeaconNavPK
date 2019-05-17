@@ -16,7 +16,7 @@ interface ProximityApiConnector {
     /*********************************************************************************************
      * ENDPOINTS
      ********************************************************************************************/
-    @POST("./beaconinfo:getforobserved?key=AIzaSyBuPg0CSCO_tZ07Oke1EbTLSMGZIxEy6fg")
+    @POST("./beaconinfo:getforobserved?key=$API_KEY")
     fun getBeaconInfo(@Body request: GetObservedRequest): Observable<GetObservedResponse>
 
     @GET("beacons")
@@ -57,8 +57,10 @@ interface ProximityApiConnector {
      * CONFIGURATION
      ********************************************************************************************/
     companion object {
-        val PROXIMITY_BEACON_SCOPE_STRING = "https://www.googleapis.com/auth/userlocation.beacon.registry"
 
+        const val API_KEY = "AIzaSyBuPg0CSCO_tZ07Oke1EbTLSMGZIxEy6fg"
+
+        val PROXIMITY_BEACON_SCOPE_STRING = "https://www.googleapis.com/auth/userlocation.beacon.registry"
 
         private const val PROXIMITY_API_ENDPOINT: String = "https://proximitybeacon.googleapis.com/v1beta1/"
 
