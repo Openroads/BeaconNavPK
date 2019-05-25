@@ -58,7 +58,7 @@ interface ProximityApiConnector {
      ********************************************************************************************/
     companion object {
 
-        const val API_KEY = "AIzaSyBuPg0CSCO_tZ07Oke1EbTLSMGZIxEy6fg"
+        const val API_KEY = "AIzaSyAm5jLSUIGspS_9pRiZX-22TxtqGXBpXa8"
 
         val PROXIMITY_BEACON_SCOPE_STRING = "https://www.googleapis.com/auth/userlocation.beacon.registry"
 

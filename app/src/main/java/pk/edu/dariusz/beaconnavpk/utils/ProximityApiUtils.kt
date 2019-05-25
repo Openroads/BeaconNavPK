@@ -6,7 +6,7 @@ fun getType(namespacedType: String): String {
 }
 
 
-const val PROXIMITY_NAMESPACE = "beacon-pk"
+const val PROXIMITY_NAMESPACE = "pkbeaconnavigation"
 
 /**
  * Type keys used in proximity api attachments

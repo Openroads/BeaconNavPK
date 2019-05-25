@@ -93,7 +93,7 @@ class ProximityApiManager(
                 { response ->
                     val proximityBeacons = response.beacons
 
-                    if (proximityBeacons.isNotEmpty()) {
+                    if (!proximityBeacons.isNullOrEmpty()) {
 
                         val beaconInfo = proximityBeacons[0]
 

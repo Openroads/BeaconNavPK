@@ -114,7 +114,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         selectedLocationMarker.color = resources.getColor(android.R.color.holo_red_dark, requireActivity().theme)
         theNearestLocationMarker.color = resources.getColor(android.R.color.holo_green_dark, requireActivity().theme)
         theNearestLocationArea.color = resources.getColor(android.R.color.holo_green_dark, requireActivity().theme)
-        theNearestLocationArea.alpha = 50
+        theNearestLocationArea.alpha = 70
         /*//TODO to animate
         val anim = AlphaAnimation(0.5f, 8.0f)
          anim.duration = 300
@@ -236,9 +236,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                 }
             }
         } else if (locationType == LocationType.WELCOME) {
-            attachmentData.message?.let { msg ->
-                welcomeTextView.text = msg.replace("\\n", "\n")
-            }
+            welcomeTextView.text = attachmentData.message?.replace("\\n", "\n") ?: ""
         }
 
         mapImageView.setImageBitmap(map)
@@ -261,16 +259,16 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
         val selectedLocationPoint = localizationPointsMap[selectedLocationMarker]
 
         localizationPointsMap.forEach { (marker, position) ->
-            tempCanvas.drawCircle(position.x, position.y, 15f, marker)
-            tempCanvas.drawCircle(position.x, position.y, 15f, marker)
+            tempCanvas.drawCircle(position.x, position.y, 30f, marker)
+            tempCanvas.drawCircle(position.x, position.y, 30f, marker)
         }
         if (theNearestLocationPoint != null) {
-            tempCanvas.drawCircle(theNearestLocationPoint.x, theNearestLocationPoint.y, 80f, theNearestLocationArea)
+            tempCanvas.drawCircle(theNearestLocationPoint.x, theNearestLocationPoint.y, 160f, theNearestLocationArea)
         }
 
         if (selectedLocationPoint != null && theNearestLocationPoint == selectedLocationPoint) {
-            tempCanvas.drawCircle(selectedLocationPoint.x, selectedLocationPoint.y, 20f, theNearestLocationMarker)
-            tempCanvas.drawCircle(selectedLocationPoint.x, selectedLocationPoint.y, 10f, selectedLocationMarker)
+            tempCanvas.drawCircle(selectedLocationPoint.x, selectedLocationPoint.y, 40f, theNearestLocationMarker)
+            tempCanvas.drawCircle(selectedLocationPoint.x, selectedLocationPoint.y, 20f, selectedLocationMarker)
         }
 
         mapImageView.setImageDrawable(BitmapDrawable(resources, tempMutableBitmap))
