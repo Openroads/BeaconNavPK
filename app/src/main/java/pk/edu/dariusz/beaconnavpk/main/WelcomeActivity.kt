@@ -36,6 +36,14 @@ import pk.edu.dariusz.beaconnavpk.utils.*
 import retrofit2.HttpException
 import java.lang.ref.WeakReference
 
+/**
+ * First activity displayed for user in application. Provides possibility to choose google account used in app.
+ * Class provides implementation for preparing environment properly for application such as:
+ * checks for bluetooth enable,
+ * checks for network connection,
+ * checks for required permission,
+ * provides way to select google account from device to use in app
+ */
 @Suppress("PrivatePropertyName")
 class WelcomeActivity : AppCompatActivity() {
     //private lateinit var accountSharedPref: SharedPreferences
@@ -340,13 +348,4 @@ class WelcomeActivity : AppCompatActivity() {
         val IS_EDITOR_KEY = "IS_EDITOR"
         val SIGNING_OUT_KEY = "SIGNING_OUT"
     }
-
-    //TODO to sign out??
-    /*  googleSignInClient.revokeAccess().addOnCompleteListener {
-            println(TAG +"Revoke:" + it.isSuccessful)
-            val exception = it.exception
-            println(TAG +"Revoke exc:" + exception)
-            exception?.printStackTrace()
-        }
-*/
 }

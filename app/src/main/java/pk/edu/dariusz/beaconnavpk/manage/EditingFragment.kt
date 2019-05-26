@@ -27,6 +27,12 @@ import pk.edu.dariusz.beaconnavpk.utils.PROXIMITY_NAMESPACE
 import pk.edu.dariusz.beaconnavpk.utils.base64Encode
 import java.lang.ref.WeakReference
 
+/**
+ * A simple [Fragment] subclass for editing beacon information in proximity API.
+ * Use the [EditingFragment.newInstance] factory method to
+ * create an instance of this currentFragment.
+ *
+ */
 class EditingFragment : Fragment() {
 
     private val TAG = "EditingFragment"
@@ -218,6 +224,14 @@ class EditingFragment : Fragment() {
 
         private const val ARG_PARAM1 = "selectedBeaconManaged"
 
+        /**
+         * Use this factory method to create a new instance of
+         * this currentFragment using the provided parameters.
+         *
+         * @param selectedBeacon selected beacon from list provided by previous view ([ManageFragment]).
+         *
+         * @return A new instance of currentFragment EditingFragment.
+         */
         @JvmStatic
         fun newInstance(selectedBeacon: BeaconManaged) =
             EditingFragment().apply {

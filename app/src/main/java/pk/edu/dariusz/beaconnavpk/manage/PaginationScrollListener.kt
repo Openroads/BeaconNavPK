@@ -3,11 +3,14 @@ package pk.edu.dariusz.beaconnavpk.manage
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 
+/**
+ * Listener detecting scrolling and loading another elements for paginated API
+ */
 abstract class PaginationScrollListener(private val layoutManager: LinearLayoutManager) :
     RecyclerView.OnScrollListener() {
 
     companion object {
-        val PAGE_SIZE = 10
+        val PAGE_SIZE = 50
     }
 
     override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {

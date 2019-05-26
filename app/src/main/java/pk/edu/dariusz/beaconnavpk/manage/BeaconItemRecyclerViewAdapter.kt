@@ -14,7 +14,11 @@ import pk.edu.dariusz.beaconnavpk.manage.ManageFragment.OnListFragmentInteractio
 import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.AttachmentEntry
 
-
+/**
+ * Adapter for recycler view displays list of all beacons in proximity API
+ * @param managedBeaconList list of beacon to display
+ * @param mListener listener to interact after click for specific element on list
+ */
 class BeaconItemRecyclerViewAdapter(
     private val managedBeaconList: MutableList<BeaconManaged>,
     private val mListener: OnListFragmentInteractionListener?

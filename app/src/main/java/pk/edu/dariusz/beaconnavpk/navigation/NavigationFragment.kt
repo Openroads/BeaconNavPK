@@ -33,6 +33,14 @@ import pk.edu.dariusz.beaconnavpk.proximityapi.model.LocationType
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.Position
 import pk.edu.dariusz.beaconnavpk.utils.*
 
+/**
+ * Fragment where navigation functionality is implemented.
+ * Contains implementation for scanning beacons using AltBeacon libraries
+ * what is placed at the bottom of class.
+ *
+ * Use the [NavigateFragment.newInstance] factory method to
+ * create an instance of this currentFragment.
+ */
 class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
     private val TAG = "NavigateFragment_TAG"

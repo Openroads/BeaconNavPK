@@ -7,6 +7,9 @@ import pk.edu.dariusz.beaconnavpk.proximityapi.model.AdvertisedId
 import pk.edu.dariusz.beaconnavpk.utils.LOCATION_NAME
 import retrofit2.Response
 
+/**
+ * Mock for [ProximityApiConnector]. Used for development purpose.
+ */
 class ProximityApiConnectorMock : ProximityApiConnector {
 
     override fun deleteAttachments(

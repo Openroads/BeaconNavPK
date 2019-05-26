@@ -4,6 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.Spinner
 
+/**
+ * Implementation for spinner with detected nearby locations (beacons).
+ * Android [Spinner] needs to be overridden due to undesirable default behaviour of setSelection method.
+ * Explained in comment above overridden methods.
+ */
 class NearBeaconsSpinner : Spinner {
 
     constructor(context: Context) : super(context)

@@ -9,17 +9,14 @@ import android.view.ViewGroup
 import pk.edu.dariusz.beaconnavpk.R
 import pk.edu.dariusz.beaconnavpk.common.IdentifiableElement
 
-
-// TODO: Rename parameter arguments, choose names that match
 // the currentFragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Activities that contain this currentFragment must implement the
- * [AboutFragment.OnFragmentInteractionListener] interface
- * to handle interaction events.
+ * Fragment displays for user information about application and legend for navigation.
+ *
  * Use the [AboutFragment.newInstance] factory method to
  * create an instance of this currentFragment.
  *
@@ -32,11 +29,9 @@ class AboutFragment : Fragment(), IdentifiableElement {
         return TAG
     }
 
-    // TODO: Rename and change types of parameters
+    // TODO: to clean up if not used
     private var param1: String? = null
     private var param2: String? = null
-    //TODO: Ready to use reference of context called fragment with interface implementation
-    // private var listener: OnFragmentInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +50,6 @@ class AboutFragment : Fragment(), IdentifiableElement {
         return inflater.inflate(R.layout.fragment_about, container, false)
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     /*fun onButtonPressed(uri: Uri) {
         listener?.onFragmentInteraction(uri)
     }*/
@@ -80,22 +74,6 @@ class AboutFragment : Fragment(), IdentifiableElement {
         listener = null
     }*/
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * currentFragment to allow an interaction in this currentFragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     *
-     * See the Android Training lesson [Communicating with Other Fragments]
-     * (http://developer.android.com/training/basics/fragments/communicating.html)
-     * for more information.
-     */
-    /* interface OnFragmentInteractionListener {
-         // TODO: Update argument type and name
-         fun onFragmentInteraction(uri: Uri)
-     }*/
-
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -105,7 +83,6 @@ class AboutFragment : Fragment(), IdentifiableElement {
          * @param param2 Parameter 2.
          * @return A new instance of currentFragment AboutFragment.
          */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             AboutFragment().apply {

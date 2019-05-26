@@ -26,6 +26,10 @@ import pk.edu.dariusz.beaconnavpk.manage.ManageFragment
 import pk.edu.dariusz.beaconnavpk.manage.model.BeaconManaged
 import pk.edu.dariusz.beaconnavpk.navigation.NavigateFragment
 
+/**
+ * Activity that host all fragments inside application except with welcome activity
+ * Implements switching between fragments, when user change view by navigation drawer
+ */
 class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     ManageFragment.OnListFragmentInteractionListener {
 
@@ -99,7 +103,7 @@ class NavigationMainActivity : AppCompatActivity(), NavigationView.OnNavigationI
                 newFragment = NavigateFragment.newInstance()
             }
             R.id.nav_info -> {
-                newFragment = AboutFragment.newInstance("aaa", "info")
+                newFragment = AboutFragment.newInstance("about", "info")
             }
             R.id.nav_manage -> {
                 newFragment = ManageFragment.newInstance(1)

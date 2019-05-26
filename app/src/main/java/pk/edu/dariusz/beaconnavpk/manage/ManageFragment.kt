@@ -39,6 +39,8 @@ import java.lang.ref.WeakReference
  * A fragment representing a list of localizations.
  * Activities containing this fragment MUST implement the
  * [ManageFragment.OnListFragmentInteractionListener] interface.
+ * Use the [ManageFragment.newInstance] factory method to
+ * create an instance of this currentFragment.
  */
 class ManageFragment : Fragment(), IdentifiableElement {
 
@@ -255,6 +257,17 @@ class ManageFragment : Fragment(), IdentifiableElement {
         return TAG
     }
 
+    /**
+     * This interface must be implemented by activities that contain this
+     * currentFragment to allow an interaction in this currentFragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     *
+     *
+     * See the Android Training lesson [Communicating with Other Fragments]
+     * (http://developer.android.com/training/basics/fragments/communicating.html)
+     * for more information.
+     */
     interface OnListFragmentInteractionListener {
         fun onBeaconManageListFragmentInteraction(selectedItem: BeaconManaged?)
     }
@@ -265,6 +278,14 @@ class ManageFragment : Fragment(), IdentifiableElement {
 
         const val EDIT_MANAGED_BEACON_RC = 112
 
+        /**
+         * Use this factory method to create a new instance of
+         * this currentFragment using the provided parameters.
+         *
+         * @param columnCount how many count will be displayed on list view.
+         *
+         * @return A new instance of currentFragment [ManageFragment].
+         */
         @JvmStatic
         fun newInstance(columnCount: Int) =
             ManageFragment().apply {

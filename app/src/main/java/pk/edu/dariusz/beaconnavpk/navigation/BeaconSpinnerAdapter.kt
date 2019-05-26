@@ -7,6 +7,12 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.BeaconInfo
 
+/**
+ * Adapter for [NearBeaconsSpinner] displayed nearby detected location
+ * @param navigateFragment fragment which displays views for user
+ * @param resource resource id for UI spinner element
+ * @param objects list for displaying on spinner
+ */
 class BeaconSpinnerAdapter(
     private val navigateFragment: NavigateFragment, @LayoutRes resource: Int,
     private val objects: MutableList<BeaconInfo>

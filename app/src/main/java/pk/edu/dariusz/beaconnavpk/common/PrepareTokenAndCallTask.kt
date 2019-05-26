@@ -7,6 +7,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import java.lang.ref.WeakReference
 
+/**
+ * This class perform  in background operation to obtain oauth2 bearer token from currently logged in application
+ * google account ([GoogleSignIn.getLastSignedInAccount]) and result execute [resultConsumer] function in UI thread.
+ *
+ * @param context context reference from which class is going to be used
+ * @param resultConsumer call back function called in main thread after background operation.
+ * @constructor Creates manager instance for prepare token task.
+ */
 class PrepareTokenAndCallTask(
     private val context: WeakReference<Context>,
     private val resultConsumer: (String?) -> Unit

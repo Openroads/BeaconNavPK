@@ -17,6 +17,17 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
+/**
+ * Proximity API Manager.
+ *
+ * This class provides implementation for integration with proximity beacon API service.
+ *
+ *
+ * @param activity activity reference from which manager is going to be used
+ * @param proximityBeaconListToSync list to synchronize. There are add new beacons from service or removed wheen properly function from manage are called.
+ * @param notifyDataSetChanged call back function. Called while updates are performed on synchronized list
+ * @constructor Creates manager instance for activity reference and list which will be synchronized.
+ */
 class ProximityApiManager(
     private val activity: Activity,
     private val proximityBeaconListToSync: MutableList<BeaconInfo>,

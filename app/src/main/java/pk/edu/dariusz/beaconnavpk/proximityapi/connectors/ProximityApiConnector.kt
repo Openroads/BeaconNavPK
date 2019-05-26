@@ -3,6 +3,7 @@ package pk.edu.dariusz.beaconnavpk.proximityapi.connectors
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.ProximityApiConnector.Companion.create
 import pk.edu.dariusz.beaconnavpk.proximityapi.connectors.model.*
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -10,6 +11,11 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 
+/**
+ * Proximity API connector. Represent HTTP client for service REST API.
+ * To create instance implement this interface use create() function provided in companion block at the bottom of class.
+ * [create] Create() function create ProximityApiConnector implementation and provides all retrofit configuration for connector
+ */
 
 interface ProximityApiConnector {
 
@@ -66,6 +72,9 @@ interface ProximityApiConnector {
 
         private val MOCK = false
 
+        /**
+         * Function creates ProximityApiConnector implementation and provides all retrofit configuration for connector
+         */
         fun create(): ProximityApiConnector {
             if (MOCK) {
                 return ProximityApiConnectorMock()
