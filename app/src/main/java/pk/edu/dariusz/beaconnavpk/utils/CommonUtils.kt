@@ -36,6 +36,17 @@ fun isNotValidTracking(syncTime: LocalDateTime): Boolean {
     return !isValidCache(syncTime)
 }
 
+/**
+ * Check if string exceed [maximumCharacterNumber], cuts if true and adds three dots at the end.
+ */
+fun truncateIfExceed(text: String, maximumCharacterNumber: Int): String {
+    return if (text.length >= maximumCharacterNumber) {
+        text.substring(0, maximumCharacterNumber) + "..."
+    } else {
+        text
+    }
+}
+
 
 /***************** COMMON CONSTANTS ***************/
 

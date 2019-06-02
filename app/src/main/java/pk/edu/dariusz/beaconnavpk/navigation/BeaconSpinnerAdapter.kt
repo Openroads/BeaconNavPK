@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import pk.edu.dariusz.beaconnavpk.proximityapi.model.BeaconInfo
+import pk.edu.dariusz.beaconnavpk.utils.truncateIfExceed
 
 /**
  * Adapter for [NearBeaconsSpinner] displayed nearby detected location
@@ -27,7 +28,7 @@ class BeaconSpinnerAdapter(
 
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = super.getDropDownView(position, convertView, parent) as TextView
-        val text = objects[position].attachmentData.locationName +
+        val text = truncateIfExceed(objects[position].attachmentData.locationName, 27) +
                 " (${objects[position].distance.toString().substring(0, 4)}m)"
         view.text = text
 

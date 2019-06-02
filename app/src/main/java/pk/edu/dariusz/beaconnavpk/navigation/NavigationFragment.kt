@@ -165,7 +165,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                 if (theClosestBeacon != null) {
                     val s = theClosestBeacon.attachmentData.locationName +
                             " (${theClosestBeacon.distance.toString().substring(0, 4)}m)"
-                    nearestLocation?.text = s
+                    nearestLocation?.text = truncateIfExceed(s, 70)
                     if (isAutomaticallySelection && theClosestBeacon !== selectedBeacon) {
                         nearby_beacons_spinner.setSelection(0, true)
                     }
@@ -230,7 +230,7 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
 
         clearAndDisableViews(locationType)
 
-        selectedLocationText.text = attachmentData.locationName
+        selectedLocationText.text = truncateIfExceed(attachmentData.locationName, 50)
 
         if (locationType == LocationType.ROOM) {
             attachmentData.message?.let { msg ->
@@ -244,7 +244,8 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                 }
             }
         } else if (locationType == LocationType.WELCOME) {
-            welcomeTextView.text = attachmentData.message?.replace("\\n", "\n") ?: ""
+            val text = attachmentData.message?.replace("\\n", "\n") ?: ""
+            welcomeTextView.text = truncateIfExceed(text, 180)
         }
 
         mapImageView.setImageBitmap(map)
@@ -441,6 +442,16 @@ class NavigateFragment : Fragment(), BeaconConsumer, IdentifiableElement {
                 }
 
             }
+
+            val notValidBeacons = trackedBeacons.filterValues { syncTime -> isNotValidTracking(syncTime) }.keys
+            notValidBeacons.forEach { beacon ->
+                proximityApiManager.removeFromTrackedProximityBeacons(
+                    encodeBeaconId(
+                        beacon
+                    )
+                )
+            }
+            trackedBeacons.keys.removeAll(notValidBeacons)
         }
 
         try {
